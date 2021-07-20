@@ -57,6 +57,8 @@ This will clone the developer disk images repository and unzip the disk images f
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
 3. You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*
 
+**Note** You can find the listener logs in *logs/deviceSync.txt*
+
 ## Kill the devices listener script
 1. Execute **./services.sh stop**
 2. Confirm you want to stop the service and optionally destroy device containers
@@ -79,3 +81,7 @@ You can destroy all device containers easily later (if you opt not to when stopp
 3. Provide *localhost* and the Appium port of the device you want to connect to.
 4. Provide **bundleId** capability with *com.apple.Preferences* for example.
 5. Start the session - you should successfully connect to the iOS device and will be able to inspect or interact with applications.
+
+## Notes
+1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
+2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.

@@ -3,7 +3,14 @@
 
 startContainer() {
  echo "================================================================"
- echo "Starting container for device $deviceName with UDID: $udid."
+ LOGSDIR="logs/container_$deviceName-$udid"
+ if [ ! -d "$LOGSDIR" ]
+ then
+  now="$(date +'%d/%m/%Y %H:%M:%S')"
+  echo "[$now] Creating logs folder for the device in logs/container_$deviceName-$udid"
+  mkdir "logs/container_$deviceName-$udid"
+ fi
+ echo "[$now] Starting container for device $deviceName with UDID: $udid."
  docker run --name "device_$deviceName-$udid" \
 	-p "$appium_port":"$appium_port" \
 	-p "$wda_port":"$wda_port" \
@@ -20,8 +27,8 @@ startContainer() {
 	-v /var/lib/lockdown:/var/lib/lockdown \
 	-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
 	-v "$(pwd)"/ipa:/opt/ipa \
-	-v "$(pwd)"/stf:/opt/stf \
-	ios-appium >> "logs/container_$deviceName-$udid.txt" 2>&1 &
+	-v "$(pwd)"/logs/container_$deviceName-$udid:/opt/logs \
+	ios-appium >> "logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
 }
 
 start-service() {
@@ -40,14 +47,14 @@ while IFS= read -r line
   if [ -z "$output" ]
   then
    echo "================================================================"
-   echo "The UDID is $udid"
-   echo "Device with Name: $deviceName, OS Version: $osVersion and UDID: $udid is not connected to the machine."
+   now="$(date +'%d/%m/%Y %H:%M:%S')"
+   echo "[$now] Device with Name: $deviceName, OS Version: $osVersion and UDID: $udid is not connected to the machine."
    containerOutput=$(docker ps -a | grep "$udid")
    if [ -z "$containerOutput" ]
    then
-    echo "No leftover container for this device to kill"
+    echo "[$now] No leftover container for this device to kill"
    else
-    echo "Killing leftover container for disconnected device with Name: $deviceName and UDID: $udid"
+    echo "[$now] Killing leftover container for disconnected device with Name: $deviceName and UDID: $udid"
     containerID=$(docker ps -aqf "name=^device_")
     docker stop "$containerID"
     docker rm "$containerID"
@@ -58,12 +65,13 @@ while IFS= read -r line
    then
    startContainer
    else
-    echo "================================================================"
-    echo "There is a container already running for device $deviceName with UDID: $udid. Nothing to do."
+    now="$(date +'%d/%m/%Y %H:%M:%S')"
+    echo "[$now] ================================================================"
+    echo "[$now] There is a container already running for device $deviceName with UDID: $udid. Nothing to do."
    fi
   fi
  sleep 10
- done < "$devices" >> "logs/deviceSync.txt" 2>&1
+ done < "$devices"
 done
 }
 
@@ -126,7 +134,7 @@ udidSelectionList(){
  IFS=$'\n' 
  read -r -d '' -a devices_array < <( ./gidevice list)
  echo "Select device from the list of connected devices: "
- select device in ${devices_array[@]}; do
+ select device in "${devices_array[@]}"; do
  #Read the device UDID based on the selection from the list
  device_udid=$(echo "$device" | cut -d ' ' -f 1)
  #Read the device OS version based on the selection from the list
@@ -312,7 +320,7 @@ echo_help() {
 
 case "$1" in
    start)
-      start-service
+      start-service >> "logs/deviceSync.txt" 2>&1 &
       ;;
    stop)
       stop-service
