@@ -89,3 +89,9 @@ You can destroy all device containers easily later (if you opt not to when stopp
 ## Notes
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
 2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
+
+## Thanks
+
+| |About|
+|---|---|
+|[electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli)|Cudos for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
