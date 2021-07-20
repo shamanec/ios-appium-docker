@@ -338,6 +338,8 @@ select yn in "Yes" "No"; do
 		No ) exit;;
 	esac
 done
+mkdir logs
+mkdir ipa
 }
 
 #INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
@@ -380,6 +382,7 @@ echo_help() {
 	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
           remove-image	       Removes the 'ios-appium' Docker image from the local repo
 	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
+	  setup		       Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
           backup               Backup the files before working on the implementation
           restore              Restore files from backup"
       exit 0
