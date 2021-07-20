@@ -236,21 +236,77 @@ remove-docker-image() {
 docker rmi $(docker images -q ios-appium)
 }
 
+#Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
+install-dependencies() {
+echo "You are about to install Docker, do you wish to continue? Yes/No"
+select yn in "Yes" "No"; do
+ case $yn in
+    Yes )
+      installDocker
+		  echo "You are about to allow Docker commands without sudo, do you wish to continue? Yes/No"
+		  select yn in "Yes" "No"; do
+			  case $yn in
+				      Yes ) executeDockerNoSudo
+					          break;;
+				       No ) break;;
+			  esac
+			done
+		  break;;
+	   No ) break;;
+  esac
+done
+echo "You are about to install unzip util, do you wish to continue? Yes/No"
+select yn in "Yes" "No"; do
+	case $yn in
+		Yes ) sudo apt-get update -y && sudo apt-get install -y unzip
+			exit;;
+		No ) exit;;
+	esac
+done
+}
+
+#INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
+installDocker(){
+#Update your existing list of packages
+sudo apt update
+#Install prerequisites
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+#Add GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+#Add the Docker repository
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+#Update the packages with the new repo
+sudo apt update
+#Make sure you install from Docker repo
+apt-cache policy docker-ce
+#Finally install Docker
+sudo apt install docker-ce
+}
+
+#EXECUTING DOCKER COMMANDS WITHOUT SUDO
+executeDockerNoSudo(){
+#Add your username to docker group
+sudo usermod -aG docker ${USER}
+#Confirm the user is added with:
+id -nG
+}
+
 echo_help() {
     echo "
       Usage: ./services.sh [option]
       Flags:
           -h    Print help
       Arguments:
-          start               Starts the device listener which creates/destroys containers upon connecting/disconnecting
-          stop  	      Stops the device listener. Also provides option to destroy containers after stopping service.
-          add-device	      Allows to add a device to devices.txt file automatically from connected devices
-          restart-container   Allows to restart a container by providing the device UDID
-          destroy-containers  Stops and removes all iOS device containers
-	  build-image	      Creates a Docker image called 'ios-appium' based on the Dockerfile
-          remove-image	      Removes the 'ios-appium' Docker image from the local repo
-          backup              Backup the files before working on the implementation
-          restore             Restore files from backup"
+          start                Starts the device listener which creates/destroys containers upon connecting/disconnecting
+          stop  	       Stops the device listener. Also provides option to destroy containers after stopping service.
+          add-device	       Allows to add a device to devices.txt file automatically from connected devices
+          restart-container    Allows to restart a container by providing the device UDID
+          destroy-containers   Stops and removes all iOS device containers
+	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
+          remove-image	       Removes the 'ios-appium' Docker image from the local repo
+	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
+          backup               Backup the files before working on the implementation
+          restore              Restore files from backup"
       exit 0
 }
 
@@ -284,6 +340,9 @@ case "$1" in
       ;;
    remove-image)
       remove-docker-image
+      ;;
+   install-dependencies)
+      install-dependencies
       ;;
    -h)
       echo_help

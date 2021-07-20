@@ -1,6 +1,9 @@
----
-
 ## Clone the project
+
+## Install project usage dependencies - currently Docker and unzip
+
+1. Execute **./services.sh install-dependencies**
+2. Agree on each question.
 
 ## Prepare WebDriverAgent.ipa file
 
@@ -18,8 +21,6 @@ You need an Apple Developer account to build **WebDriverAgent**
 7. Finally zip up the project as an ipa file:
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
-
----
 
 ## Prepare wdaSync file
 1. Open the **configs/wdaSync.sh** file
