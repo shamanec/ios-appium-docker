@@ -90,7 +90,7 @@ You can destroy all device containers easily later (if you opt not to when stopp
 3. Provide *localhost* and the Appium port of the device you want to connect to.
 4. Provide **bundleId** capability with *com.apple.Preferences* for example.
 5. Start the session - you should successfully connect to the iOS device and will be able to inspect or interact with applications.  
-![Alt text](https://ibb.co/bJzBG1V "Appium session")
+[![Appium session](https://iili.io/umx5gV.md.png)](https://freeimage.host/i/umx5gV)
 
 ## Notes
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
