@@ -5,6 +5,10 @@
 1. Execute **./services.sh install-dependencies**
 2. Agree on each question.
 
+## Set up the project
+1. Execute **./service.sh setup**
+2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId.
+
 ## Prepare WebDriverAgent.ipa file
 
 You need an Apple Developer account to build **WebDriverAgent**
@@ -72,7 +76,7 @@ You can destroy all device containers easily later (if you opt not to when stopp
 
 ## Add test IPA files
 1. Copy and paste your test IPA file in the *ipa/* folder.
-2. You can access and provide the IPA files to Appium using the following capability: \n
+2. You can access and provide the IPA files to Appium using the following capability:  
 {"app": "opt/fileName.ipa"}
 
 ## Make an Appium connection

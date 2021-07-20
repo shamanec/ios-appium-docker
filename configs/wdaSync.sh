@@ -1,25 +1,24 @@
 #!/bin/bash
 
-wdaBundleID=com.shamanec.WebDriverAgentRunner.xctrunner
-
 #Start the WebDriverAgent on specific WDA and MJPEG ports
 start-wda-gidevice() {
 echo "Attempting to start WDA service on device"
-./gidevice/gidevice -u $DEVICE_UDID xctest $wdaBundleID --env=USE_PORT=$WDA_PORT --env=MJPEG_SERVER_PORT=$MJPEG_PORT > "/opt/logs/wdaLogs.txt" 2>&1 &
+echo "Running ./gidevice/gidevice -u $DEVICE_UDID xctest $WDA_BUNDLEID --env=USE_PORT=$WDA_PORT --env=MJPEG_SERVER_PORT=$MJPEG_PORT" 
+./gidevice/gidevice -u $DEVICE_UDID xctest $WDA_BUNDLEID --env=USE_PORT=$WDA_PORT --env=MJPEG_SERVER_PORT=$MJPEG_PORT > "/opt/logs/wdaLogs.txt" 2>&1 &
 sleep 5
 } >> "/opt/logs/wdaLogs.txt"
 
 #Kill the WebDriverAgent app if running on the device
 kill-wda() {
 echo "Attempting to kill WDA app on device"
-./gidevice/gidevice -u $DEVICE_UDID kill $wdaBundleID
+./gidevice/gidevice -u $DEVICE_UDID kill $WDA_BUNDLEID
 sleep 2
 } >> "/opt/logs/wdaLogs.txt"
 
 #Uninstall the WebDriverAgent app from the device
 uninstall-wda() {
 echo "Uninstalling WDA application on device if present"
-./gidevice/gidevice -u $DEVICE_UDID uninstall $wdaBundleID
+./gidevice/gidevice -u $DEVICE_UDID uninstall $WDA_BUNDLEID
 sleep 2
 } >> "/opt/logs/wdaLogs.txt"
 

@@ -1,5 +1,68 @@
 #!/bin/bash
 
+setup() {
+echo "Are you registering the devices on Selenium Grid? Yes/No"
+select yn in "Yes" "No"; do
+	case $yn in
+		Yes ) add-hub-host
+		      add-hub-port
+		      break;;
+		No ) add-wda-bundleID
+		     exit;;
+	esac
+done
+add-wda-bundleID
+}
+
+add-hub-host() {
+ read -p "Enter the IP address of the Selenium Hub Host: " hub_host
+  while :
+   do
+    if [[ -z "$hub_host" ]]; then
+      read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host
+    else
+    case ${hub_host} in
+       *\ *) read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host;;
+          *) break;;
+    esac
+    fi
+   done
+ sed -i "s/SELENIUM_HUB_HOST=.*/SELENIUM_HUB_HOST=$hub_host/g" configs/env.txt
+}
+
+add-hub-port() {
+ read -p "Enter the Selenium Hub Port: " hub_port
+  while :
+   do
+    if [[ -z "$hub_port" ]] || [[ "$hub_port" =~ ^[A-za-z]+$ ]]; then
+     read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port
+     else
+      case ${hub_port} in
+        *\ *) read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port;;
+           *) break;;
+      esac
+    fi
+   done
+ sed -i "s/SELENIUM_HUB_PORT=.*/SELENIUM_HUB_PORT=$hub_port/g" configs/env.txt
+}
+
+add-wda-bundleID() {
+read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner) " -r bundle_id
+ while :
+ do
+ if [[ -z "$bundle_id" ]]; then
+ echo "No bundleID provided, using default value: com.shamanec.WebDriverAgentRunner.xctrunner"
+ bundle_id="com.shamanec.WebDriverAgentRunner.xctrunner"
+ break
+ else
+ case ${bundle_id} in
+    *\ *) read -p "Invalid input, WebDriverAgent bundleID cannot contain spaces. Enter the bundleID again: " -r bundle_id;;
+    *) break;;
+ esac
+ fi
+ done
+ sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
+}
 
 startContainer() {
  echo "================================================================"
@@ -11,6 +74,9 @@ startContainer() {
   mkdir "logs/container_$deviceName-$udid"
  fi
  echo "[$now] Starting container for device $deviceName with UDID: $udid."
+ hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
+ hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
+ wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
  docker run --name "device_$deviceName-$udid" \
 	-p "$appium_port":"$appium_port" \
 	-p "$wda_port":"$wda_port" \
@@ -21,8 +87,9 @@ startContainer() {
 	-e APPIUM_PORT="$appium_port" \
 	-e DEVICE_OS_VERSION="$osVersion" \
 	-e DEVICE_NAME="$deviceName" \
-	-e SELENIUM_HUB_HOST=172.18.0.1 \
-	-e SELENIUM_HUB_PORT=4444 \
+	-e SELENIUM_HUB_HOST="$hub_host" \
+	-e SELENIUM_HUB_PORT="$hub_port" \
+	-e WDA_BUNDLEID="$wda_bundle_id" \
 	-v /var/run/usbmuxd:/var/run/usbmuxd \
 	-v /var/lib/lockdown:/var/lib/lockdown \
 	-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
@@ -351,6 +418,9 @@ case "$1" in
       ;;
    install-dependencies)
       install-dependencies
+      ;;
+   setup)
+      setup
       ;;
    -h)
       echo_help
