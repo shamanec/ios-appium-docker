@@ -100,6 +100,10 @@ You can destroy all device containers easily later (if you opt not to when stopp
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
 2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
 
+## Help
+
+1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section on the main script.
+
 ## Thanks
 
 | |About|
