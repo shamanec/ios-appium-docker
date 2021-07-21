@@ -15,6 +15,14 @@ If you follow this guide step by step you should have no issues running Appium t
 1. Execute **./service.sh setup**
 2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
+### or alternatively
+
+1. Open *configs/env.txt* file.
+2. Change the values for each of the 3 variables:  
+*SELENIUM_HUB_HOST*  
+*SELENIUM_HUB_PORT*  
+*WDA_BUNDLE_ID*
+
 ## Prepare WebDriverAgent.ipa file
 
 You need an Apple Developer account to build **WebDriverAgent**
