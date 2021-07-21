@@ -12,7 +12,7 @@ You still cannot avoid having at least one(any) Mac machine to build the WebDriv
 
 ## Set up the project
 1. Execute **./service.sh setup**
-2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId.
+2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
 ## Prepare WebDriverAgent.ipa file
 
