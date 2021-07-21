@@ -1,7 +1,7 @@
 ## Introduction
 
-This is a work in progress solution for running Appium tests on real iOS devices using Appium on Ubuntu with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file. You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically. As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes. The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine. If you follow this guide step by step you should have no issues running Appium tests without Xcode in no time.  
-If I could test with more devices I could prove this but theoretically using this you should be able to scale a lot more with provider machines because each device has its own Docker container than runs on much cheaper Ubuntu hardware, saving money spent on several MacMinis for example(if you have lots of devices). You still cannot avoid having at least one Mac machine to build the WebDriverAgent.ipa file and allow development on your devices, but the pro is that you can do this on any Mac machine that runs newer OSX/Xcode versions.
+This is a work in progress solution for running Appium tests on real iOS devices using Appium on Linux with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file. You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically. As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes. The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine. If you follow this guide step by step you should have no issues running Appium tests without Xcode in no time.  
+You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.
 
 ## Clone the project
 
@@ -45,7 +45,7 @@ You need an Apple Developer account to build **WebDriverAgent**
 iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 5. Use unique ports for Appium, WDA port and Mjpeg port for each device.
 
-## or alternatively add device to the file using the script from list of connected devices
+# or alternatively add device to the file using the script from list of connected devices
 1. Execute **./services.sh add-device**
 2. Type device name
 3. Select device from list of connected devices.
@@ -58,6 +58,14 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 ## Prepare the Developer Disk Images
 
 1. Execute **./services.sh setup-disk-images**
+
+# or alternatively if you don't want the disk images in the same folder as the project
+
+1. Clone https://github.com/shamanec/iOS-DeviceSupport.git in a folder of your choice.
+2. Unzip all the files as is.
+3. Open the **services.sh** file and find the **start-container** function.
+4. Change the following line **-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \** to  
+**-v "{folder with the unzipped disk images":/opt/DeveloperDiskImages \
 
 This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
 
