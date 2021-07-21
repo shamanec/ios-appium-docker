@@ -57,17 +57,17 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 
 ## Prepare the Developer Disk Images
 
-1. Execute **./services.sh setup-disk-images**
+1. Execute **./services.sh setup-disk-images**  
+
+This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
 
 ### or alternatively if you don't want the disk images in the same folder as the project
 
 1. Clone https://github.com/shamanec/iOS-DeviceSupport.git in a folder of your choice.
 2. Unzip all the files as is.
 3. Open the **services.sh** file and find the **start-container** function.
-4. Change the following line **-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \** to  
-**-v "{folder with the unzipped disk images":/opt/DeveloperDiskImages \
-
-This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
+4. Change the following line **-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \ ** to  
+**-v "{folder with the unzipped disk images":/opt/DeveloperDiskImages \ **
 
 ## Start the devices listener script
 1. Execute **./services.sh start**
