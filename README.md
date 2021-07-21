@@ -1,6 +1,6 @@
 ## Introduction
 
-This is a work in progress solution for running Appium tests on real iOS devices using Appium on Linux with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file. You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically. As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes. The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine. If you follow this guide step by step you should have no issues running Appium tests without Xcode in no time.  
+This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file. You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically. As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes. The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine. If you follow this guide step by step you should have no issues running Appium tests without Xcode in no time.  
 You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.
 
 ## Clone the project
@@ -83,7 +83,7 @@ This will clone the developer disk images repository and unzip the disk images f
 You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh destroy-containers**
 
 ## Connect the devices to the machine (if not already connected)
-1. Run **docker ps -a | grep iPhone**
+1. Run **docker ps -a | grep ios_device**
 2. You should see a container for each connected device that is listed in *devices.txt*
 3. You should see WebDriverAgent installed on each of the connected devices.
 

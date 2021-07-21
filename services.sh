@@ -77,7 +77,7 @@ startContainer() {
  hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
  hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
  wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
- docker run --name "device_$deviceName-$udid" \
+ docker run --name "ios_device_$deviceName-$udid" \
 	-p "$appium_port":"$appium_port" \
 	-p "$wda_port":"$wda_port" \
 	-p "$mjpeg_port":"$mjpeg_port" \
@@ -122,7 +122,7 @@ while IFS= read -r line
     echo "[$now] No leftover container for this device to kill"
    else
     echo "[$now] Killing leftover container for disconnected device with Name: $deviceName and UDID: $udid"
-    containerID=$(docker ps -aqf "name=^device_")
+    containerID=$(docker ps -aqf "name=^ios_device_")
     docker stop "$containerID"
     docker rm "$containerID"
   fi
@@ -179,8 +179,8 @@ echo "Listening service stopped".
 }
 
 destroy-containers() {
-docker stop $(docker ps -aqf "name=^device_")
-docker rm $(docker ps -aqf "name=^device_")
+docker stop $(docker ps -aqf "name=^ios_device_")
+docker rm $(docker ps -aqf "name=^ios_device_")
 echo "Containers stopped and removed. Closing..."
 sleep 2
 exit
