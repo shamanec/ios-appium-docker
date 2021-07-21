@@ -79,10 +79,10 @@ mount-disk-images() {
  ./gidevice/gidevice -u $DEVICE_UDID mount /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg.signature
 } >> "/opt/logs/wdaLogs.txt"
 
-#Do not generate nodeconfig.json if the device will not be registered on Selenium Grid
+#Only generate nodeconfig.json if the device will be registered on Selenium Grid
 if [ ${ON_GRID} == "true" ]
  then
-  ./opt/configgen.sh > /opt/nodeconfig.json
+  ./opt/nodeconfiggen.sh > /opt/nodeconfig.json
 fi
 mount-disk-images
 while true

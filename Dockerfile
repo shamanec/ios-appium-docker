@@ -16,7 +16,7 @@ RUN export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \
 
 #Copy scripts and WDA ipa to the image
 COPY configs/wdaSync.sh /opt/wdaSync.sh
-COPY configs/configgen.sh /opt/configgen.sh
+COPY configs/nodeconfiggen.sh /opt/nodeconfiggen.sh
 COPY WebDriverAgent.ipa /opt/WebDriverAgent.ipa
 COPY configs/device_sync.sh / 
 ENTRYPOINT ["/bin/bash","-c","/device_sync.sh"]
