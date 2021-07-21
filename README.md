@@ -45,7 +45,7 @@ You need an Apple Developer account to build **WebDriverAgent**
 iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 5. Use unique ports for Appium, WDA port and Mjpeg port for each device.
 
-# or alternatively add device to the file using the script from list of connected devices
+### or alternatively add device to the file using the script from list of connected devices
 1. Execute **./services.sh add-device**
 2. Type device name
 3. Select device from list of connected devices.
@@ -59,7 +59,7 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 
 1. Execute **./services.sh setup-disk-images**
 
-# or alternatively if you don't want the disk images in the same folder as the project
+### or alternatively if you don't want the disk images in the same folder as the project
 
 1. Clone https://github.com/shamanec/iOS-DeviceSupport.git in a folder of your choice.
 2. Unzip all the files as is.
