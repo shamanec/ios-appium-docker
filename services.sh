@@ -65,6 +65,7 @@ read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgen
 }
 
 startContainer() {
+ on_grid=$1
  echo "================================================================"
  LOGSDIR="logs/container_$deviceName-$udid"
  if [ ! -d "$LOGSDIR" ]
@@ -77,6 +78,14 @@ startContainer() {
  hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
  hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
  wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
+ if [ "$on_grid" == "no-grid" ]
+ then
+  hub_lines="	-e ON_GRID=false"
+ else
+  hub_lines="	-e SELENIUM_HUB_HOST="$hub_host" \
+	-e SELENIUM_HUB_PORT="$hub_port" \
+	-e  ON_GRID=true"
+ fi
  docker run --name "ios_device_$deviceName-$udid" \
 	-p "$appium_port":"$appium_port" \
 	-p "$wda_port":"$wda_port" \
@@ -87,8 +96,7 @@ startContainer() {
 	-e APPIUM_PORT="$appium_port" \
 	-e DEVICE_OS_VERSION="$osVersion" \
 	-e DEVICE_NAME="$deviceName" \
-	-e SELENIUM_HUB_HOST="$hub_host" \
-	-e SELENIUM_HUB_PORT="$hub_port" \
+	$hub_lines \
 	-e WDA_BUNDLEID="$wda_bundle_id" \
 	-v /var/run/usbmuxd:/var/run/usbmuxd \
 	-v /var/lib/lockdown:/var/lib/lockdown \
@@ -99,6 +107,7 @@ startContainer() {
 }
 
 start-service() {
+on_grid=$1
 devices=configs/devices.txt
 while true
 do
@@ -130,7 +139,7 @@ while IFS= read -r line
    containerOutput=$(docker ps -a | grep "$udid")
    if [ -z "$containerOutput" ]
    then
-   startContainer
+   startContainer $on_grid
    else
     now="$(date +'%d/%m/%Y %H:%M:%S')"
     echo "[$now] ================================================================"
@@ -375,10 +384,12 @@ echo_help() {
           -h    Print help
       Arguments:
           start                Starts the device listener which creates/destroys containers upon connecting/disconnecting
+	  start-no-grid        Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
           stop  	       Stops the device listener. Also provides option to destroy containers after stopping service.
           add-device	       Allows to add a device to devices.txt file automatically from connected devices
           restart-container    Allows to restart a container by providing the device UDID
           destroy-containers   Stops and removes all iOS device containers
+	  setup-disk-images    Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
 	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
           remove-image	       Removes the 'ios-appium' Docker image from the local repo
 	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
@@ -392,6 +403,9 @@ case "$1" in
    start)
       start-service >> "logs/deviceSync.txt" 2>&1 &
       ;;
+   start-no-grid)
+      start-service no-grid >> "logs/deviceSync.txt" 2>&1 &
+      ;;
    stop)
       stop-service
       ;;
@@ -400,12 +414,6 @@ case "$1" in
       ;;
    restart-container)
       restart-container
-      ;;
-   backup)
-      backup
-      ;;
-   restore)
-      restore
       ;;
    destroy-containers)
       destroy-containers
@@ -424,6 +432,12 @@ case "$1" in
       ;;
    setup)
       setup
+      ;;
+   backup)
+      backup
+      ;;
+   restore)
+      restore
       ;;
    -h)
       echo_help
