@@ -66,8 +66,8 @@ This will clone the developer disk images repository and unzip the disk images f
 1. Clone https://github.com/shamanec/iOS-DeviceSupport.git in a folder of your choice.
 2. Unzip all the files as is.
 3. Open the **services.sh** file and find the **start-container** function.
-4. Change the following line **-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \ ** to  
-**-v "{folder with the unzipped disk images":/opt/DeveloperDiskImages \ **
+4. Change the following line *-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages* to  
+*-v "{folder with the unzipped disk images":/opt/DeveloperDiskImages*
 
 ## Start the devices listener script
 1. Execute **./services.sh start**
