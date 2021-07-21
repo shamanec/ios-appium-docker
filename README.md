@@ -31,11 +31,6 @@ You need an Apple Developer account to build **WebDriverAgent**
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
 
-## Prepare wdaSync file
-1. Open the **configs/wdaSync.sh** file
-2. Change the **'wdaBundleID'** value to the bundle ID you used to build WebDriverAgent.ipa.
-3. Save the file.
-
 ## Prepare devices file
 1. Execute **./gidevice list**
 2. Get the UDIDs of all currently connected devices.
