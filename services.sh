@@ -1,5 +1,8 @@
 #!/bin/bash
 
+
+#==========================SETUP FUNCTIONS==========================#
+#===================================================================#
 setup() {
 echo "Are you registering the devices on Selenium Grid? Yes/No"
 select yn in "Yes" "No"; do
@@ -64,6 +67,9 @@ read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgen
  sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
 }
 
+#=====================SERVICE AND CONTAINER FUNCTIONS=======================#
+#===========================================================================#
+
 startContainer() {
  on_grid=$1
  echo "================================================================"
@@ -82,8 +88,8 @@ startContainer() {
  then
   hub_lines="	-e ON_GRID=false"
  else
-  hub_lines="	-e SELENIUM_HUB_HOST="$hub_host" \
-	-e SELENIUM_HUB_PORT="$hub_port" \
+  hub_lines="	-e SELENIUM_HUB_HOST=$hub_host \
+	-e SELENIUM_HUB_PORT=$hub_port \
 	-e  ON_GRID=true"
  fi
  docker run --name "ios_device_$deviceName-$udid" \
@@ -96,13 +102,13 @@ startContainer() {
 	-e APPIUM_PORT="$appium_port" \
 	-e DEVICE_OS_VERSION="$osVersion" \
 	-e DEVICE_NAME="$deviceName" \
-	$hub_lines \
+	"$hub_lines" \
 	-e WDA_BUNDLEID="$wda_bundle_id" \
 	-v /var/run/usbmuxd:/var/run/usbmuxd \
 	-v /var/lib/lockdown:/var/lib/lockdown \
 	-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
 	-v "$(pwd)"/ipa:/opt/ipa \
-	-v "$(pwd)"/logs/container_$deviceName-$udid:/opt/logs \
+	-v "$(pwd)/logs/container_$deviceName-$udid":/opt/logs \
 	ios-appium >> "logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
 }
 
@@ -139,7 +145,7 @@ while IFS= read -r line
    containerOutput=$(docker ps -a | grep "$udid")
    if [ -z "$containerOutput" ]
    then
-   startContainer $on_grid
+   startContainer "$on_grid"
    else
     now="$(date +'%d/%m/%Y %H:%M:%S')"
     echo "[$now] ================================================================"
@@ -162,7 +168,7 @@ else
  select yn in "Yes" "No"; do
 	case $yn in
 		Yes ) 
-		kill-service $processID
+		kill-service "$processID"
 		echo "Do you also wish to destroy the devices containers? Yes/No"
 		select yn in "Yes" "No"; do
 		        case $yn in
@@ -183,17 +189,20 @@ fi
 }
 
 kill-service() {
-kill -9 $1
+kill -9 "$1"
 echo "Listening service stopped".
 }
 
 destroy-containers() {
-docker stop $(docker ps -aqf "name=^ios_device_")
-docker rm $(docker ps -aqf "name=^ios_device_")
+docker stop "$(docker ps -aqf "name=^ios_device_")"
+docker rm "$(docker ps -aqf "name=^ios_device_")"
 echo "Containers stopped and removed. Closing..."
 sleep 2
 exit
 }
+
+#======================ADD DEVICE TO LIST FUNCTIONS==========================#
+#============================================================================#
 
 add-device() {
 if ! [ -s configs/devices.txt ]
@@ -223,7 +232,6 @@ udidSelectionList(){
 addFirstDevice(){
  device_name=""
  device_udid=""
- device_type=""
  os_version=""
  
  #Read non-hardcoded values from user input
@@ -254,7 +262,6 @@ addFirstDevice(){
 addAdditionalDevice(){
  device_name=""
  device_udid=""
- device_type=""
  os_version=""
  
  #Get the number of lines in the devices file if not empty
@@ -264,13 +271,13 @@ addAdditionalDevice(){
  lineIndex=$(echo "$(expr $numberOfLines)" | bc -l)
  
  #Increment appium port based on number of lines (devices)
- appium_port=$(expr 4840 + $numberOfLines + 1)
+ appium_port="$(expr 4840 + $numberOfLines + 1)"
  
  #Increment wda port based on number of lines (devices)
- wda_port=$(expr 20001 + $numberOfLines + 2)
+ wda_port="$(expr 20001 + $numberOfLines + 2)"
 
  #Increment mjpeg port based on number of lines (devices)
- mjpeg_port=$(expr 20001 + $numberOfLines + 3)
+ mjpeg_port="$(expr 20001 + $numberOfLines + 3)"
  
  #Read non-hardcoded values from user input
  #Input and read device name
@@ -303,6 +310,10 @@ addAdditionalDevice(){
  fi
 }
 
+
+#====================SETUP DEPENDENCIES FUNCTIONS=====================#
+#=====================================================================#
+
 setup_developer_disk_images() {
 git clone https://github.com/shamanec/iOS-DeviceSupport.git DeveloperDiskImages
 cd DeveloperDiskImages/DeviceSupport
@@ -317,7 +328,7 @@ docker build -t ios-appium .
 
 #Delete Docker image from local repo
 remove-docker-image() {
-docker rmi $(docker images -q ios-appium)
+docker rmi "$(docker images -q ios-appium)"
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
@@ -353,51 +364,33 @@ mkdir ipa
 
 #INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
 installDocker(){
-#Update your existing list of packages
-sudo apt update
-#Install prerequisites
-sudo apt install apt-transport-https ca-certificates curl software-properties-common
-#Add GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-#Add the Docker repository
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
-#Update the packages with the new repo
-sudo apt update
-#Make sure you install from Docker repo
-apt-cache policy docker-ce
-#Finally install Docker
-sudo apt install docker-ce
+ #Update your existing list of packages
+ sudo apt update
+ #Install prerequisites
+ sudo apt install apt-transport-https ca-certificates curl software-properties-common
+ #Add GPG key
+ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+ #Add the Docker repository
+ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+ #Update the packages with the new repo
+ sudo apt update
+ #Make sure you install from Docker repo
+ apt-cache policy docker-ce
+ #Finally install Docker
+ sudo apt install docker-ce
 }
 
 #EXECUTING DOCKER COMMANDS WITHOUT SUDO
 executeDockerNoSudo(){
-#Add your username to docker group
-sudo usermod -aG docker ${USER}
-#Confirm the user is added with:
-id -nG
+ #Add your username to docker group
+ sudo usermod -aG docker "${USER}"
+ #Confirm the user is added with:
+ id -nG
 }
 
-echo_help() {
-    echo "
-      Usage: ./services.sh [option]
-      Flags:
-          -h    Print help
-      Arguments:
-          start                Starts the device listener which creates/destroys containers upon connecting/disconnecting
-	  start-no-grid        Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
-          stop  	       Stops the device listener. Also provides option to destroy containers after stopping service.
-          add-device	       Allows to add a device to devices.txt file automatically from connected devices
-          restart-container    Allows to restart a container by providing the device UDID
-          destroy-containers   Stops and removes all iOS device containers
-	  setup-disk-images    Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
-	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
-          remove-image	       Removes the 'ios-appium' Docker image from the local repo
-	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
-	  setup		       Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
-          backup               Backup the files before working on the implementation
-          restore              Restore files from backup"
-      exit 0
-}
+
+#=======================BACKUP AND RESTORE=========================#
+#==================================================================#
 
 backup() {
  if [ ! -d "$(pwd)/backup" ]
@@ -510,11 +503,40 @@ check-file-existence() {
 }
 
 restore-file() {
-backUpFilePath=$1
-targetPath=$2
-cp "$backUpFilePath" "$targetPath"
+ backUpFilePath=$1
+ targetPath=$2
+ cp "$backUpFilePath" "$targetPath"
 }
 
+
+#==========================HELP==========================#
+#========================================================#
+echo_help() {
+    echo "
+      Usage: ./services.sh [option]
+      Flags:
+          -h    Print help
+      Arguments:
+          start                Starts the device listener which creates/destroys containers upon connecting/disconnecting
+	  start-no-grid        Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
+          stop  	       Stops the device listener. Also provides option to destroy containers after stopping service.
+          add-device	       Allows to add a device to devices.txt file automatically from connected devices
+          restart-container    Allows to restart a container by providing the device UDID - TODO
+	  create-container     Allows to start a single container without the listening service by providing the device UDID - TODO
+          destroy-containers   Stops and removes all iOS device containers
+	  setup-disk-images    Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
+	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
+          remove-image	       Removes the 'ios-appium' Docker image from the local repo
+	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
+	  setup		       Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
+          backup               Backup all or particular project files before working on them.
+          restore              Restore files from backup"
+      exit 0
+}
+
+
+#=======================MAIN SCRIPT=======================#
+#=========================================================#
 case "$1" in
    start)
       start-service >> "logs/deviceSync.txt" 2>&1 &
@@ -529,7 +551,14 @@ case "$1" in
       add-device
       ;;
    restart-container)
-      restart-container
+      echo "Functionality pending development."
+      sleep 3
+      exit 0
+      ;;
+   create-container)
+      echo "Functionality pending development."
+      sleep 3
+      exit 0
       ;;
    destroy-containers)
       destroy-containers
