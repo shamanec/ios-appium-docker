@@ -79,6 +79,8 @@ mount-disk-images() {
  ./gidevice/gidevice -u $DEVICE_UDID mount /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg.signature
 } >> "/opt/logs/wdaLogs.txt"
 
+
+export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 #Only generate nodeconfig.json if the device will be registered on Selenium Grid
 if [ ${ON_GRID} == "true" ]
  then

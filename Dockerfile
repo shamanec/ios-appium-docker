@@ -15,8 +15,7 @@ RUN export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \
     npm config set user 0 && npm config set unsafe-perm true && npm install -g appium
 
 #Copy scripts and WDA ipa to the image
-COPY configs/wdaSync.sh /opt/wdaSync.sh
 COPY configs/nodeconfiggen.sh /opt/nodeconfiggen.sh
 COPY WebDriverAgent.ipa /opt/WebDriverAgent.ipa
-COPY configs/device_sync.sh / 
-ENTRYPOINT ["/bin/bash","-c","/device_sync.sh"]
+COPY configs/wdaSync.sh / 
+ENTRYPOINT ["/bin/bash","-c","/wdaSync.sh"]
