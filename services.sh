@@ -399,6 +399,89 @@ echo_help() {
       exit 0
 }
 
+backup() {
+ if [ ! -d "$(pwd)/backup" ]
+ then
+	mkdir backup
+	mkdir backup/configs
+ fi
+ echo "Please select which project files to backup: "
+ options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/env.txt" "configs/devices.txt" "configs/device_sync.sh")
+ select opt in "${options[@]}"
+ do
+	case $opt in
+		"All files")
+			cp services.sh backup/services.sh \
+			&& cp Dockerfile backup/Dockerfile \
+			&& cp -r configs backup/configs
+			;;
+		"services.sh")
+			cp services.sh backup/services.sh
+			;;
+		"Dockerfile")
+			cp Dockerfile backup/Dockerfile
+			;;
+		"configs/wdaSync.sh")
+			cp configs/wdaSync.sh backup/configs/wdaSync.sh
+			;;
+		"configs/nodeconfiggen.sh")
+			cp configs/nodeconfiggen.sh backup/configs/nodeconfiggen.sh
+			;;
+		"configs/env.txt")
+			cp configs/env.txt backup/configs/env.txt
+			;;
+		"configs/devices.txt")
+			cp configs/devices.txt backup/configs/devices.txt
+			;;
+		"configs/device_sync.sh")
+			cp configs/device_sync.sh backup/configs/device_sync.sh
+			;;
+		*) echo "Invalid option selected. Please try again.."
+	esac
+ done
+ echo "Files backed up. Closing..."
+ sleep 1
+}
+
+restore() {
+echo "Please select which project files to restore: "
+ options=("All files" "services.sh" "Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt" "backup/configs/device_sync.sh")
+ select opt in "${options[@]}"
+ do
+	case $opt in
+		"All files")
+			cp backup/services.sh services.sh \
+			&& backup/Dockerfile cp Dockerfile \
+			&& cp -r backup/configs configs 
+			;;
+		"services.sh")
+			cp backup/services.sh services.sh
+			;;
+		"Dockerfile")
+			cp backup/Dockerfile Dockerfile
+			;;
+		"backup/configs/wdaSync.sh")
+			cp backup/configs/wdaSync.sh configs/wdaSync.sh
+			;;
+		"backup/configs/nodeconfiggen.sh")
+			cp backup/configs/nodeconfiggen.sh configs/nodeconfiggen.sh
+			;;
+		"backup/configs/env.txt")
+			cp backup/configs/env.txt configs/env.txt
+			;;
+		"backup/configs/devices.txt")
+			cp backup/configs/devices.txt configs/devices.txt
+			;;
+		"backup/configs/device_sync.sh")
+			cp backup/configs/device_sync.sh configs/device_sync.sh
+			;;
+		*) echo "Invalid option selected. Please try again.."
+	esac
+ done
+ echo "Files restored. Closing..."
+ sleep 1
+}
+
 case "$1" in
    start)
       start-service >> "logs/deviceSync.txt" 2>&1 &
