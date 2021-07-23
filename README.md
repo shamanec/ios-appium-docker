@@ -14,21 +14,9 @@
 1. Execute **./services.sh install-dependencies**
 2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
 
-## Set up the project
-1. Execute **./service.sh setup**
-2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
-
-### or alternatively
-
-1. Open *configs/env.txt* file.
-2. Change the values for each of the 3 variables:  
-*SELENIUM_HUB_HOST*  
-*SELENIUM_HUB_PORT*  
-*WDA_BUNDLE_ID*
-
 ## Prepare WebDriverAgent.ipa file
 
-You need an Apple Developer account to build **WebDriverAgent**
+You need an Apple Developer account to sign and build **WebDriverAgent**
 
 1. Open **WebDriverAgent.xcodeproj** in Xcode.
 2. Ensure a team is selected before building the application. To do this go to: *Targets* and select each target one at a time. There should be a field for assigning teams certificates to the target.
@@ -42,6 +30,18 @@ You need an Apple Developer account to build **WebDriverAgent**
 7. Finally zip up the project as an ipa file:
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
+
+## Set up the project
+1. Execute **./service.sh setup**
+2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
+
+### or alternatively
+
+1. Open *configs/env.txt* file.
+2. Change the values for each of the 3 variables:  
+*SELENIUM_HUB_HOST*  
+*SELENIUM_HUB_PORT*  
+*WDA_BUNDLE_ID*
 
 ## Prepare devices file
 1. Execute **./gidevice list**
