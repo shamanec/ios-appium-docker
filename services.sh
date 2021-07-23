@@ -413,7 +413,7 @@ backup() {
 		"All files")
 			cp services.sh backup/services.sh \
 			&& cp Dockerfile backup/Dockerfile \
-			&& cp -r configs backup/configs
+			&& cp -r configs/* backup/configs
 			;;
 		"services.sh")
 			cp services.sh backup/services.sh
@@ -438,48 +438,81 @@ backup() {
 			;;
 		*) echo "Invalid option selected. Please try again.."
 	esac
+ break
  done
  echo "Files backed up. Closing..."
  sleep 1
+ exit 0
 }
 
 restore() {
 echo "Please select which project files to restore: "
- options=("All files" "services.sh" "Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt" "backup/configs/device_sync.sh")
+ options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt" "backup/configs/device_sync.sh")
  select opt in "${options[@]}"
  do
 	case $opt in
 		"All files")
+			if [ ! -d "$(pwd)/backup" ]
+ 			then
+  			echo "Backup folder does not exist, nothing restored. Closing..."
+  			sleep 2
+  			exit 0
+ 			fi
+			check-file-existence "$(pwd)/backup"
 			cp backup/services.sh services.sh \
-			&& backup/Dockerfile cp Dockerfile \
-			&& cp -r backup/configs configs 
+			&& cp backup/Dockerfile Dockerfile \
+			&& cp -r backup/configs/* configs 
 			;;
-		"services.sh")
-			cp backup/services.sh services.sh
+		"backup/services.sh")
+			check-file-existence "backup/services.sh"
+			restore-file "$opt" services.sh
 			;;
-		"Dockerfile")
-			cp backup/Dockerfile Dockerfile
+		"backup/Dockerfile")
+			check-file-existence "backup/Dockerfile"
+			restore-file "$opt" Dockerfile
 			;;
 		"backup/configs/wdaSync.sh")
-			cp backup/configs/wdaSync.sh configs/wdaSync.sh
+			check-file-existence "backup/configs/wdaSync.sh"
+			restore-file "$opt" configs/wdaSync.sh
 			;;
 		"backup/configs/nodeconfiggen.sh")
-			cp backup/configs/nodeconfiggen.sh configs/nodeconfiggen.sh
+			check-file-existence "backup/configs/nodeconfiggen.sh"
+			restore-file "$opt" configs/nodeconfiggen.sh
 			;;
 		"backup/configs/env.txt")
-			cp backup/configs/env.txt configs/env.txt
+			check-file-existence "backup/configs/env.txt"
+			restore-file "$opt" configs/env.txt
 			;;
 		"backup/configs/devices.txt")
-			cp backup/configs/devices.txt configs/devices.txt
+			check-file-existence "backup/configs/devices.txt"
+			restore-file "$opt" configs/devices.txt
 			;;
 		"backup/configs/device_sync.sh")
-			cp backup/configs/device_sync.sh configs/device_sync.sh
+			check-file-existence "backup/configs/device_sync.sh"
+			restore-file "$opt" configs/device_sync.sh
 			;;
 		*) echo "Invalid option selected. Please try again.."
 	esac
+ break
  done
  echo "Files restored. Closing..."
  sleep 1
+}
+
+check-file-existence() {
+ fileName=$1
+ if [ ! -f "$fileName" ]
+ then
+  echo "$fileName does not exist, nothing restored. Closing..."
+  sleep 2
+  exit 0
+ fi
+}
+
+restore-file() {
+backUpFilePath=$1
+targetPath=$2
+cp "$backUpFilePath" "$targetPath"
 }
 
 case "$1" in
