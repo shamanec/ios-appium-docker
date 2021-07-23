@@ -107,6 +107,10 @@ You can destroy all device containers easily later (if you opt not to when stopp
 5. Start the session - you should successfully connect to the iOS device and will be able to inspect or interact with applications.  
 [![Appium session](https://iili.io/umx5gV.md.png)](https://freeimage.host/i/umx5gV)
 
+## Backup and restore project files
+1. Execute **./services.sh backup** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
+2. Execute **./services.sh restore** - you will be asked if you want to restore all or a particular file.
+
 ## Notes
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
 2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
