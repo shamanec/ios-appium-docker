@@ -59,8 +59,12 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 4. It will be automatically added to the list in *devices.txt*
 
 ## Create the docker image
-1. Run **'docker build -t ios-appium .'**
+1. Run **'docker build -t ios-appium .'** or execute **./services.sh build-image**
 2. Wait for the image to be created.
+
+#### Additional docker image note
+
+1. You can remove the docker image using the script also by executing **./services.sh remove-image**
 
 ## Prepare the Developer Disk Images
 
