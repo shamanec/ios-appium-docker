@@ -4,8 +4,8 @@
 #==========================SETUP FUNCTIONS==========================#
 #===================================================================#
 setup() {
-echo "Are you registering the devices on Selenium Grid? Yes/No"
-select yn in "Yes" "No"; do
+ echo "Are you registering the devices on Selenium Grid? Yes/No"
+ select yn in "Yes" "No"; do
 	case $yn in
 		Yes ) add-hub-host
 		      add-hub-port
@@ -13,8 +13,8 @@ select yn in "Yes" "No"; do
 		No ) add-wda-bundleID
 		     exit;;
 	esac
-done
-add-wda-bundleID
+ done
+ add-wda-bundleID
 }
 
 add-hub-host() {
@@ -52,18 +52,18 @@ add-hub-port() {
 add-wda-bundleID() {
 read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner) " -r bundle_id
  while :
- do
- if [[ -z "$bundle_id" ]]; then
- echo "No bundleID provided, using default value: com.shamanec.WebDriverAgentRunner.xctrunner"
- bundle_id="com.shamanec.WebDriverAgentRunner.xctrunner"
- break
- else
- case ${bundle_id} in
-    *\ *) read -p "Invalid input, WebDriverAgent bundleID cannot contain spaces. Enter the bundleID again: " -r bundle_id;;
-    *) break;;
- esac
- fi
- done
+  do
+   if [[ -z "$bundle_id" ]]; then
+    echo "No bundleID provided, using default value: com.shamanec.WebDriverAgentRunner.xctrunner"
+    bundle_id="com.shamanec.WebDriverAgentRunner.xctrunner"
+    break
+   else
+    case ${bundle_id} in
+      *\ *) read -p "Invalid input, WebDriverAgent bundleID cannot contain spaces. Enter the bundleID again: " -r bundle_id;;
+      *) break;;
+    esac
+   fi
+  done
  sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
 }
 
@@ -189,16 +189,16 @@ fi
 }
 
 kill-service() {
-kill -9 "$1"
-echo "Listening service stopped".
+ kill -9 "$1"
+ echo "Listening service stopped".
 }
 
 destroy-containers() {
-docker stop "$(docker ps -aqf "name=^ios_device_")"
-docker rm "$(docker ps -aqf "name=^ios_device_")"
-echo "Containers stopped and removed. Closing..."
-sleep 2
-exit
+ docker stop "$(docker ps -aqf "name=^ios_device_")"
+ docker rm "$(docker ps -aqf "name=^ios_device_")"
+ echo "Containers stopped and removed. Closing..."
+ sleep 2
+ exit
 }
 
 #======================ADD DEVICE TO LIST FUNCTIONS==========================#
@@ -267,17 +267,14 @@ addAdditionalDevice(){
  #Get the number of lines in the devices file if not empty
  numberOfLines=$(wc -l < configs/devices.txt)
  
- #Using this line because for some reason I can't use the initial value for the number of lines
- lineIndex=$(echo "$(expr $numberOfLines)" | bc -l)
- 
  #Increment appium port based on number of lines (devices)
- appium_port="$(expr 4840 + $numberOfLines + 1)"
+ appium_port="$((4840 + $numberOfLines + 1))"
  
  #Increment wda port based on number of lines (devices)
- wda_port="$(expr 20001 + $numberOfLines + 2)"
+ wda_port="$((20000 + $numberOfLines + 1))"
 
  #Increment mjpeg port based on number of lines (devices)
- mjpeg_port="$(expr 20001 + $numberOfLines + 3)"
+ mjpeg_port="$((20100 + $numberOfLines + 1))"
  
  #Read non-hardcoded values from user input
  #Input and read device name
@@ -315,27 +312,27 @@ addAdditionalDevice(){
 #=====================================================================#
 
 setup_developer_disk_images() {
-git clone https://github.com/shamanec/iOS-DeviceSupport.git DeveloperDiskImages
-cd DeveloperDiskImages/DeviceSupport
-unzip "*.zip"
-rm *.zip
+ git clone https://github.com/shamanec/iOS-DeviceSupport.git DeveloperDiskImages
+ cd DeveloperDiskImages/DeviceSupport
+ unzip "*.zip"
+ rm *.zip
 }
 
 #Build Docker image
 docker-build() {
-docker build -t ios-appium .
+ docker build -t ios-appium .
 }
 
 #Delete Docker image from local repo
-remove-docker-image() {
-docker rmi "$(docker images -q ios-appium)"
+ remove-docker-image() {
+ docker rmi "$(docker images -q ios-appium)"
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
 install-dependencies() {
-echo "You are about to install Docker, do you wish to continue? Yes/No"
-select yn in "Yes" "No"; do
- case $yn in
+ echo "You are about to install Docker, do you wish to continue? Yes/No"
+ select yn in "Yes" "No"; do
+  case $yn in
     Yes )
       installDocker
 		  echo "You are about to allow Docker commands without sudo, do you wish to continue? Yes/No"
@@ -349,17 +346,17 @@ select yn in "Yes" "No"; do
 		  break;;
 	   No ) break;;
   esac
-done
-echo "You are about to install unzip util, do you wish to continue? Yes/No"
-select yn in "Yes" "No"; do
+ done
+ echo "You are about to install unzip util, do you wish to continue? Yes/No"
+ select yn in "Yes" "No"; do
 	case $yn in
 		Yes ) sudo apt-get update -y && sudo apt-get install -y unzip
 			exit;;
 		No ) exit;;
 	esac
-done
-mkdir logs
-mkdir ipa
+ done
+ mkdir logs
+ mkdir ipa
 }
 
 #INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
