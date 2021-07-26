@@ -102,7 +102,7 @@ startContainer() {
 	-e APPIUM_PORT="$appium_port" \
 	-e DEVICE_OS_VERSION="$osVersion" \
 	-e DEVICE_NAME="$deviceName" \
-	"$hub_lines" \
+	$hub_lines \
 	-e WDA_BUNDLEID="$wda_bundle_id" \
 	-v /var/run/usbmuxd:/var/run/usbmuxd \
 	-v /var/lib/lockdown:/var/lib/lockdown \
