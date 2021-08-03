@@ -49,6 +49,7 @@ check-wda-status() {
     sleep 10
   else
     start-wda
+    sleep 10
  fi
  if curl -Is "http://127.0.0.1:${APPIUM_PORT}/wd/hub/status" | head -1 | grep -q '200 OK'
      then
