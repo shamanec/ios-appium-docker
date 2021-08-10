@@ -90,7 +90,8 @@ startContainer() {
  else
   hub_lines="	-e SELENIUM_HUB_HOST=$hub_host \
 	-e SELENIUM_HUB_PORT=$hub_port \
-	-e  ON_GRID=true"
+	-e  ON_GRID=true \
+	-p $hub_port:$hub_port"
  fi
  docker run --name "ios_device_$deviceName-$udid" \
 	-p "$appium_port":"$appium_port" \
