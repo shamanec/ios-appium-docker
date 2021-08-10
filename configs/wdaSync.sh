@@ -8,18 +8,21 @@ start-wda-gidevice() {
 
 #Kill the WebDriverAgent app if running on the device
 kill-wda() {
- echo "[$(date +'%d/%m/%Y %H:%M:%S')] Attempting to kill WDA app on device"
- ./gidevice/gidevice -u $DEVICE_UDID kill $WDA_BUNDLEID
- sleep 2
+ if ./gidevice/gidevice ps -u $DEVICE_UDID | grep $WDA_BUNDLEID
+ then
+  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Attempting to kill WDA app on device"
+  ./gidevice/gidevice -u $DEVICE_UDID kill $WDA_BUNDLEID
+  sleep 2
+ fi
 }
 
 #Uninstall the WebDriverAgent app from the device
 uninstall-wda() {
- echo "[$(date +'%d/%m/%Y %H:%M:%S')] Uninstalling WDA application on device if present"
  if ./gidevice/gidevice applist -u $DEVICE_UDID | grep $WDA_BUNDLEID
  then
- ./gidevice/gidevice -u $DEVICE_UDID uninstall $WDA_BUNDLEID
- sleep 2
+  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Uninstalling WDA from the device"
+  ./gidevice/gidevice -u $DEVICE_UDID uninstall $WDA_BUNDLEID
+  sleep 1
  fi
 }
 
@@ -27,7 +30,7 @@ uninstall-wda() {
 install-wda() {
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Installing WDA application on device"
  ./gidevice/gidevice -u $DEVICE_UDID install /opt/WebDriverAgent.ipa
- sleep 2
+ sleep 5
 }
 
 #Start the WDA service on the device using the WDA bundleId
