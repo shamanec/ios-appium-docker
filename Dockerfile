@@ -2,6 +2,8 @@ FROM ubuntu:latest
 #Setup libimobile device, usbmuxd and some tools 
 RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get -y install unzip  wget curl libimobiledevice-utils libimobiledevice6 usbmuxd cmake git build-essential python
 
+RUN apt update && apt install -y ffmpeg
+
 #Grab gidevice from github and extract it in a folder
 RUN wget https://github.com/electricbubble/gidevice-cli/releases/download/v0.5.1/gidevice-cli_0.5.1_Linux_64bit.tar.gz
 RUN mkdir gidevice
