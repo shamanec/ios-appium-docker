@@ -5,7 +5,7 @@ cat << EndOfMessage
   "capabilities":
       [
         {
-          "browserName": "safari",
+          "browserName": "${DEVICE_NAME}",
           "version":"${DEVICE_OS_VERSION}",
           "maxInstances": 1,
           "platform":"iOS",
@@ -18,9 +18,9 @@ cat << EndOfMessage
       ],
   "configuration":
   {
-    "url":"http://${SELENIUM_HUB_HOST}:${SELENIUM_HUB_PORT}/wd/hub",
+    "url":"http://10.8.0.3:${APPIUM_PORT}/wd/hub",
     "port": ${APPIUM_PORT},
-    "host": "${SELENIUM_HUB_HOST}",
+    "host": "10.8.0.3",
     "hubPort": ${SELENIUM_HUB_PORT},
     "hubHost": "${SELENIUM_HUB_HOST}",
     "timeout": 180,
@@ -28,7 +28,8 @@ cat << EndOfMessage
     "register": true,
     "registerCycle": 5000,
     "automationName": "XCUITest",
-    "downPollingLimit": 10
+    "downPollingLimit": 10,
+    "hubProtocol": "http"
   }
 }
 EndOfMessage
