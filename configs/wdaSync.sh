@@ -4,6 +4,7 @@
 start-wda-gidevice() {
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Starting WebDriverAgent application on port $WDA_PORT"
  ./gidevice/gidevice -u $DEVICE_UDID xctest $WDA_BUNDLEID --env=USE_PORT=$WDA_PORT --env=MJPEG_SERVER_PORT=$MJPEG_PORT > "/opt/logs/wdaLogs.txt" 2>&1 &
+ sleep 2
 }
 
 #Kill the WebDriverAgent app if running on the device
@@ -41,10 +42,15 @@ start-wda() {
  install-wda
  start-wda-gidevice
  #Parse the device IP address from the WebDriverAgent logs using the ServerURL
- while [ -z "$deviceIP" ]
+ for i in {1..5}
  do
-  deviceIP=`grep "ServerURLHere->" "/opt/logs/wdaLogs.txt" | cut -d ':' -f 5`
- sleep 3
+  if [ -z "$deviceIP" ]
+   then
+    deviceIP=`grep "ServerURLHere->" "/opt/logs/wdaLogs.txt" | cut -d ':' -f 5`
+    sleep 3
+   else
+    break
+   fi
  done
 }
 
