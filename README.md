@@ -103,13 +103,20 @@ You can destroy all device containers easily later (if you opt not to when stopp
 2. You can access and provide the IPA files to Appium using the following capability:  
 {"app": "opt/fileName.ipa"}
 
-## Make an Appium connection
+## Make an Appium connection with Appium Desktop
 1. Open Appium Desktop for example.
 2. Open the *Start new session window* screen.
 3. Provide *localhost* and the Appium port of the device you want to connect to.
 4. Provide **bundleId** capability with *com.apple.Preferences* for example.
 5. Start the session - you should successfully connect to the iOS device and will be able to inspect or interact with applications.  
 [![Appium session](https://iili.io/umx5gV.md.png)](https://freeimage.host/i/umx5gV)
+
+## Demo project
+1. Clone the [demo-project](https://github.com/shamanec/Java-Appium-iOS-Demo).
+2. Execute any/all of the 3 tests in the **Tests.java** class.
+ * **nativeTest()** - executes a simple test against the Preferences app using **Mobile.by.iOSClassChain("")** to identify and interact with an element.
+ * **nativeImageTest()** - executes a simple test against the Preferences app using **Mobile.by.image("")** and the *opencv4nodejs* library to identify and interact with an element using provided image.
+ * **safariTest()** - executes a simple test in the Safari browser
 
 ## Backup and restore project files
 1. Execute **./services.sh backup** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
