@@ -111,7 +111,7 @@ You can destroy all device containers easily later (if you opt not to when stopp
 5. Start the session - you should successfully connect to the iOS device and will be able to inspect or interact with applications.  
 [![Appium session](https://iili.io/umx5gV.md.png)](https://freeimage.host/i/umx5gV)
 
-## Demo project
+## Demo Java project
 1. Clone the [demo-project](https://github.com/shamanec/Java-Appium-iOS-Demo).
 2. Execute any/all of the 3 tests in the **Tests.java** class.
  * **nativeTest()** - executes a simple test against the Preferences app using **Mobile.by.iOSClassChain("")** to identify and interact with an element.
