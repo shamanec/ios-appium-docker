@@ -89,7 +89,7 @@ This will clone the developer disk images repository and unzip the disk images f
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
 3. You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*
 
-**Note** You can find the listener logs in *logs/deviceSync.txt*
+**Note** You can find the listener logs in *logs/deviceSync.txt*  
 **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
 ## Kill the devices listener script
