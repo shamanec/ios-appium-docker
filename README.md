@@ -7,6 +7,11 @@
  * You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.  
  * If you follow this guide step by step you should have no issues running Appium tests on Linux without Xcode in no time.
 
+### Known limitations
+1. It is not possible to execute **driver.executeScript("mobile: startPerfRecord")** to record application performance since Xcode tools are not available.  
+
+This is by no means an exhaustive list and there might be more limitations present.
+
 ## Clone the project
 
 ## Install project usage dependencies - currently Docker and unzip
