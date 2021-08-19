@@ -1,8 +1,14 @@
 ## env.txt
 
- * This file contains the SELENIUM_HUB_HOST, SELENIUM_HUB_PORT and WDA_BUNDLE_ID variables.
- * SELENIUM_HUB_HOST and SELENIUM_HUB_PORT can be left as is or empty if you are not going to connect to Selenium Grid.
- * WDA_BUNDLE_ID can be left as is (cannot guarantee on 100% you will be able to use mine) or provide the bundle ID of the WDA you built yourself.
+ * This file contains the SELENIUM_HUB_HOST, SELENIUM_HUB_PORT, DEVICES_HOST_IP, HUB_PROTOCOL and WDA_BUNDLE_ID variables.
+ * SELENIUM_HUB_HOST, SELENIUM_HUB_PORT and DEVICES_HOST_IP can be left as is or empty if you are not going to connect to Selenium Grid.
+ * SELENIUM_HUB_HOST should be the IP address of the Selenium Grid if you are connecting to one.
+ * SELENIUM_HUB_PORT should be the port of the Selenium Grid if you are connecting to one.
+ * HUB_PROTOCOL should be 'http' or 'https' if you are connecting to Selenium Grid depending on your setup.
+ * DEVICES_HOST_IP should be the IP address of the current machine that will provide the devices if you are connecting to Selenium Grid.
+ * **Important** The Selenium Grid setup was tested on a local network so you might need adjustments in **env.txt**, **nodeconfiggen.sh** script and the *start-container* function in the **services.sh** script depending on your current setup.
+ * WDA_BUNDLE_ID can be left as is (cannot guarantee on 100% you will be able to use mine) or provide the bundle ID of the WDA you built yourself.  
+ **NOTE** You can update those values through the main script by executing **./services.sh setup**.
 
 ## devices.txt
 
