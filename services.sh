@@ -9,6 +9,8 @@ setup() {
 	case $yn in
 		Yes ) add-hub-host
 		      add-hub-port
+		      add-devices-host
+		      add-hub-protocol
 		      break;;
 		No ) add-wda-bundleID
 		     exit;;
@@ -49,6 +51,30 @@ add-hub-port() {
  sed -i "s/SELENIUM_HUB_PORT=.*/SELENIUM_HUB_PORT=$hub_port/g" configs/env.txt
 }
 
+add-devices-host() {
+ read -p "Enter the IP address of the devices host machine: " devices_host
+  while :
+   do
+    if [[ -z "$devices_host" ]]; then
+      read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host
+    else
+    case ${devices_host} in
+       *\ *) read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host;;
+          *) break;;
+    esac
+    fi
+   done
+ sed -i "s/DEVICES_HOST_IP=.*/DEVICES_HOST_IP=$devices_host/g" configs/env.txt
+}
+
+add-hub-protocol() {
+ echo "Please select the hub protocol: http/https"
+ select protocol in "http" "https"; do
+   sed -i "s/HUB_PROTOCOL=.*/HUB_PROTOCOL=$protocol/g" configs/env.txt
+   break
+ done
+}
+
 add-wda-bundleID() {
 read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner) " -r bundle_id
  while :
@@ -84,6 +110,8 @@ startContainer() {
  hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
  hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
  wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
+ devices_host=$(cat configs/env.txt | grep "DEVICES_HOST_IP" | cut -d '=' -f 2)
+ hub_protocol=$(cat configs/env.txt | grep "HUB_PROTOCOL" | cut -d '=' -f 2)
  if [ "$on_grid" == "no-grid" ]
  then
   hub_lines="	-e ON_GRID=false"
@@ -91,6 +119,8 @@ startContainer() {
   hub_lines="	-e SELENIUM_HUB_HOST=$hub_host \
 	-e SELENIUM_HUB_PORT=$hub_port \
 	-e  ON_GRID=true \
+	-e DEVICES_HOST=$devices_host \
+	-e HUB_PROTOCOL=$hub_protocol \
 	-p $hub_port:$hub_port"
  fi
  docker run --name "ios_device_$deviceName-$udid" \

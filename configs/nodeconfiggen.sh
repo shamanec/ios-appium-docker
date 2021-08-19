@@ -18,9 +18,9 @@ cat << EndOfMessage
       ],
   "configuration":
   {
-    "url":"http://10.8.0.3:${APPIUM_PORT}/wd/hub",
+    "url":"http://${DEVICES_HOST}:${APPIUM_PORT}/wd/hub",
     "port": ${APPIUM_PORT},
-    "host": "10.8.0.3",
+    "host": "${DEVICES_HOST}",
     "hubPort": ${SELENIUM_HUB_PORT},
     "hubHost": "${SELENIUM_HUB_HOST}",
     "timeout": 180,
@@ -29,7 +29,7 @@ cat << EndOfMessage
     "registerCycle": 5000,
     "automationName": "XCUITest",
     "downPollingLimit": 10,
-    "hubProtocol": "http"
+    "hubProtocol": "${HUB_PROTOCOL}"
   }
 }
 EndOfMessage
