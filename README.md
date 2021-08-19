@@ -33,15 +33,19 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 ## Set up the project
 1. Execute **./service.sh setup**
-2. Provide the requested data - Selenium Hub Host and Port if connecting to Selenium Grid and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
+2. Provide the requested data - Selenium Hub Host, Selenium Hub port, devices host IP address and hub protocol(if connecting to Selenium Grid) and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
 ### or alternatively
 
 1. Open *configs/env.txt* file.
-2. Change the values for each of the 3 variables:  
+2. Change the values for each of the 5 variables:  
 *SELENIUM_HUB_HOST*  
 *SELENIUM_HUB_PORT*  
-*WDA_BUNDLE_ID*
+*DEVICES_HOST_IP*  
+*HUB_PROTOCOL*  
+*WDA_BUNDLE_ID*  
+
+For more information on the variables you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#envtxt)
 
 ## Prepare devices file
 1. Execute **./gidevice list**
@@ -86,6 +90,7 @@ This will clone the developer disk images repository and unzip the disk images f
 3. You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*
 
 **Note** You can find the listener logs in *logs/deviceSync.txt*
+**Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
 ## Kill the devices listener script
 1. Execute **./services.sh stop**
