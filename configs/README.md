@@ -25,8 +25,8 @@
  * Please refer to the very ugly diagram below:  
 <img src="https://iili.io/RlA29I.png" width="100%" height="100%">  
 
- * The script uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run the WebDriverAgent
- * The script also uses the *gidevice-cli* to mount the Developer Disk Images to the device - you should already have them prepared as described in the main project Readme.md
+ * The script uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run the WebDriverAgent
+ * The script also uses the *go-ios* to mount the Developer Disk Images to the device - you should already have them prepared as described in the main project Readme.md
  * The script checks if WDA is up and running by calling **curl -Is "http:$deviceIP:$WDA_PORT/status"**
  * The script checks if Appium is up and running by calling **curl -Is "http://127.0.0.1:${APPIUM_PORT}/wd/hub/status"**
  * Appium is launched using the *webDriverAgentUrl* capability to connect to the already installed and started WDA agent instead of attempting to install it which obviously will not work without Xcode :D

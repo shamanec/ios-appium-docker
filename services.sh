@@ -140,7 +140,7 @@ startContainer() {
 	-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
 	-v "$(pwd)"/ipa:/opt/ipa \
 	-v "$(pwd)/logs/container_$deviceName-$udid":/opt/logs \
-	ios-appium >> "logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
+	go-ios-docker >> "logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
 }
 
 start-service() {
@@ -351,12 +351,12 @@ setup_developer_disk_images() {
 
 #Build Docker image
 docker-build() {
- docker build -t ios-appium .
+ docker build -t go-ios-docker .
 }
 
 #Delete Docker image from local repo
  remove-docker-image() {
- docker rmi "$(docker images -q ios-appium)"
+ docker rmi "$(docker images -q go-ios-docker)"
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
