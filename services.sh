@@ -143,7 +143,7 @@ startContainer() {
     -v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
     -v "$(pwd)"/ipa:/opt/ipa \
     -v "$(pwd)/logs/container_$deviceName-$udid":/opt/logs \
-    go-ios-docker >>"logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
+    ios-appium >>"logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
 }
 
 start-service() {
@@ -370,12 +370,22 @@ setup_developer_disk_images() {
 
 #Build Docker image
 docker-build() {
-  docker build -t go-ios-docker .
+  image_name=$1
+  if [ "$image_name" != "" ]; then
+    docker build -t $image_name .
+  else
+    docker build -t ios-appium .
+  fi
 }
 
 #Delete Docker image from local repo
 remove-docker-image() {
-  docker rmi "$(docker images -q go-ios-docker)"
+  image_name=$1
+  if [ "$image_name" != "" ]; then
+    docker rmi "$(docker images -q $image_name)"
+  else
+    docker rmi "$(docker images -q ios-appium)"
+  fi
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
@@ -555,20 +565,20 @@ echo_help() {
       Flags:
           -h    Print help
       Arguments:
-          start                Starts the device listener which creates/destroys containers upon connecting/disconnecting
-	  start-no-grid        Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
-          stop  	       Stops the device listener. Also provides option to destroy containers after stopping service.
-          add-device	       Allows to add a device to devices.txt file automatically from connected devices
-          restart-container    Allows to restart a container by providing the device UDID - TODO
-	  create-container     Allows to start a single container without the listening service by providing the device UDID - TODO
-          destroy-containers   Stops and removes all iOS device containers
-	  setup-disk-images    Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
-	  build-image	       Creates a Docker image called 'ios-appium' based on the Dockerfile
-          remove-image	       Removes the 'ios-appium' Docker image from the local repo
-	  install-dependencies Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
-	  setup		       Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
-          backup               Backup all or particular project files before working on them.
-          restore              Restore files from backup"
+          start                     		Starts the device listener which creates/destroys containers upon connecting/disconnecting
+	  start-no-grid             		Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
+          stop  	            		Stops the device listener. Also provides option to destroy containers after stopping service.
+          add-device	            		Allows to add a device to devices.txt file automatically from connected devices
+          restart-container         		Allows to restart a container by providing the device UDID - TODO
+	  create-container          		Allows to start a single container without the listening service by providing the device UDID - TODO
+          destroy-containers        		Stops and removes all iOS device containers
+	  setup-disk-images         		Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
+	  build-image [image name]  		Creates a Docker image called 'ios-appium' based on the Dockerfile by default. You can also provide image name as argument
+          remove-image	[image name]            Removes the 'ios-appium' Docker image from the local repo by default. You can also provide image name as argument
+	  install-dependencies      		Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
+	  setup		            		Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
+          backup                    		Backup all or particular project files before working on them.
+          restore                   		Restore files from backup"
   exit 0
 }
 
@@ -604,10 +614,10 @@ setup-disk-images)
   setup_developer_disk_images
   ;;
 build-image)
-  docker-build
+  docker-build $2
   ;;
 remove-image)
-  remove-docker-image
+  remove-docker-image $2
   ;;
 install-dependencies)
   install-dependencies
