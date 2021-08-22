@@ -76,7 +76,7 @@ add-hub-protocol() {
 }
 
 add-wda-bundleID() {
-read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner) " -r bundle_id
+read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner). Type and press Enter or press Enter to select default value: " -r bundle_id
  while :
   do
    if [[ -z "$bundle_id" ]]; then
@@ -99,7 +99,9 @@ read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgen
 startContainer() {
  on_grid=$1
  echo "================================================================"
+ #Generate logs dir name for the specific device
  LOGSDIR="logs/container_$deviceName-$udid"
+ #Create the logs dir if not already present
  if [ ! -d "$LOGSDIR" ]
  then
   now="$(date +'%d/%m/%Y %H:%M:%S')"
@@ -107,18 +109,21 @@ startContainer() {
   mkdir "logs/container_$deviceName-$udid"
  fi
  echo "[$now] Starting container for device $deviceName with UDID: $udid."
- hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
- hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
  wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
- devices_host=$(cat configs/env.txt | grep "DEVICES_HOST_IP" | cut -d '=' -f 2)
- hub_protocol=$(cat configs/env.txt | grep "HUB_PROTOCOL" | cut -d '=' -f 2)
  if [ "$on_grid" == "no-grid" ]
  then
+  #Build custom part of the docker run command when not connecting to Selenium Grid
   hub_lines="	-e ON_GRID=false"
  else
+  #Get the Selenium Grid arguments from the env.txt file
+  hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
+  hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
+  devices_host=$(cat configs/env.txt | grep "DEVICES_HOST_IP" | cut -d '=' -f 2)
+  hub_protocol=$(cat configs/env.txt | grep "HUB_PROTOCOL" | cut -d '=' -f 2)
+  #Build custom part of the docker run command when connecting to Selenium Grid
   hub_lines="	-e SELENIUM_HUB_HOST=$hub_host \
 	-e SELENIUM_HUB_PORT=$hub_port \
-	-e  ON_GRID=true \
+	-e ON_GRID=true \
 	-e DEVICES_HOST=$devices_host \
 	-e HUB_PROTOCOL=$hub_protocol \
 	-p $hub_port:$hub_port"
@@ -148,20 +153,25 @@ on_grid=$1
 devices=configs/devices.txt
 while true
 do
+#Read the device.txt file line by line
 while IFS= read -r line
  do
+  #Parse the respective device values for the current line from devices.txt file
   udid=$(echo "$line" | cut -d '|' -f 3 | xargs)
   deviceName=$(echo "$line" | cut -d '|' -f 1 | xargs)
   osVersion=$(echo "$line" | cut -d '|' -f 2 | xargs)
   appium_port=$(echo "$line" | cut -d '|' -f 4 | xargs)
   wda_port=$(echo "$line" | cut -d '|' -f 5 | xargs)
   mjpeg_port=$(echo "$line" | cut -d '|' -f 6 | xargs)
+  #Check if the currently targeted device is connected to the machine
   output=$(./ios list | grep "$udid")
+  #If the device is not connected to the machine
   if [ -z "$output" ]
   then
    echo "================================================================"
    now="$(date +'%d/%m/%Y %H:%M:%S')"
    echo "[$now] Device with Name: $deviceName, OS Version: $osVersion and UDID: $udid is not connected to the machine."
+   #Check if a container still exists for the not connected device - if there is one, remove it
    containerOutput=$(docker ps -a | grep "$udid")
    if [ -z "$containerOutput" ]
    then
@@ -172,11 +182,15 @@ while IFS= read -r line
     docker stop "$containerID"
     docker rm "$containerID"
   fi
+  #If the device is connected to the machine
   else
+   #Check if a container already exists for this device
    containerOutput=$(docker ps -a | grep "$udid")
+   #If container doesn't exist - create one
    if [ -z "$containerOutput" ]
    then
    startContainer "$on_grid"
+   #If container already exists - do nothing
    else
     now="$(date +'%d/%m/%Y %H:%M:%S')"
     echo "[$now] ================================================================"

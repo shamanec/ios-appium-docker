@@ -1,6 +1,6 @@
 ## Introduction
 
- * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
+ * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and manual maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
  * You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically.  
  * As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes.  
  * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
