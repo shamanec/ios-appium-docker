@@ -69,11 +69,13 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 
 ## Create the docker image
 1. Run **'docker build -t ios-appium .'** or execute **./services.sh build-image**
-2. Wait for the image to be created.
+2. Wait for the image to be created - it will be named 'ios-appium' by default.
 
-#### Additional docker image note
+#### Additional docker image notes
 
-1. You can remove the docker image using the script also by executing **./services.sh remove-image**
+1. You can remove the default docker image 'ios-appium' using the script also by executing **./services.sh remove-image**.
+2. You can build a specific docker image by providing name as argument. Example: **./services.sh build-image test**
+3. You can remove a specific docker image by providing name as argument. Example: **./services.sh remove-image test**
 
 ## Prepare the Developer Disk Images
 
