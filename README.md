@@ -1,6 +1,6 @@
 ## Introduction
 
- * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file.   
+ * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
  * You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically.  
  * As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes.  
  * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
@@ -53,7 +53,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 For more information on the variables you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#envtxt)
 
 ## Prepare devices file
-1. Execute **./gidevice list**
+1. Execute **./ios list**
 2. Get the UDIDs of all currently connected devices.
 3. Open(create) the **configs/devices.txt** file.
 4. Add each device using the same format, each on separate line:
@@ -145,4 +145,4 @@ You can destroy all device containers easily later (if you opt not to when stopp
 
 | |About|
 |---|---|
-|[electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli)|Cudos for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
+|[go-ios](https://github.com/danielpaulus/go-ios)|Cudos for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
