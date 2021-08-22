@@ -427,7 +427,7 @@ backup() {
 	mkdir backup/configs
  fi
  echo "Please select which project files to backup: "
- options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/env.txt" "configs/devices.txt" "configs/device_sync.sh")
+ options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/env.txt" "configs/devices.txt")
  select opt in "${options[@]}"
  do
 	case $opt in
@@ -454,9 +454,6 @@ backup() {
 		"configs/devices.txt")
 			cp configs/devices.txt backup/configs/devices.txt
 			;;
-		"configs/device_sync.sh")
-			cp configs/device_sync.sh backup/configs/device_sync.sh
-			;;
 		*) echo "Invalid option selected. Please try again.."
 	esac
  break
@@ -468,7 +465,7 @@ backup() {
 
 restore() {
 echo "Please select which project files to restore: "
- options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt" "backup/configs/device_sync.sh")
+ options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt")
  select opt in "${options[@]}"
  do
 	case $opt in
@@ -507,10 +504,6 @@ echo "Please select which project files to restore: "
 		"backup/configs/devices.txt")
 			check-file-existence "backup/configs/devices.txt"
 			restore-file "$opt" configs/devices.txt
-			;;
-		"backup/configs/device_sync.sh")
-			check-file-existence "backup/configs/device_sync.sh"
-			restore-file "$opt" configs/device_sync.sh
 			;;
 		*) echo "Invalid option selected. Please try again.."
 	esac
