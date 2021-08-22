@@ -156,7 +156,7 @@ while IFS= read -r line
   appium_port=$(echo "$line" | cut -d '|' -f 4 | xargs)
   wda_port=$(echo "$line" | cut -d '|' -f 5 | xargs)
   mjpeg_port=$(echo "$line" | cut -d '|' -f 6 | xargs)
-  output=$(./gidevice list | grep "$udid")
+  output=$(./ios list | grep "$udid")
   if [ -z "$output" ]
   then
    echo "================================================================"
@@ -245,17 +245,17 @@ fi
 }
 
 #This method lists the UDIDs of all connected real devices with selection
-udidSelectionList(){
- devices_array=()
- IFS=$'\n' 
- read -r -d '' -a devices_array < <( ./gidevice list)
+device_selection_list(){
+ udids_array=()
+ versions_array=()
+ IFS=$'\n'
+ read -r -d '' -a udids_array < <( ./ios list --details | jq -r '.deviceList[].Udid')
+ read -r -d '' -a versions_array < <( ./ios list --details | jq -r '.deviceList[].ProductVersion' )
  echo "Select device from the list of connected devices: "
- select device in "${devices_array[@]}"; do
- #Read the device UDID based on the selection from the list
- device_udid=$(echo "$device" | cut -d ' ' -f 1)
- #Read the device OS version based on the selection from the list
- os_version=$(echo "$device" | awk -F'[()]' '{print $2}' | sed 's/v//')
- break
+ select device in "UDID: ${udids_array[@]},OS_VERSION: ${versions_array[@]}"; do
+  device_udid=$(echo $device | awk -F '[,]'  '{print $1}' | awk -F '[: ]' '{print $3}')
+  os_version=$(echo $device | awk -F '[,]'  '{print $2}' | awk -F '[: ]' '{print $3}')
+  break
  done
 }
 
@@ -283,7 +283,7 @@ addFirstDevice(){
  
  #List the UDIDs of all connected real devices with selection
  #TO DO find a way to show more information on the devices if possible
- udidSelectionList
+ device_selection_list
 
  #Write the device to the devices.txt file
  echo "$device_name | $os_version | $device_udid | 4841 | 20001 | 20002 " >> configs/devices.txt
@@ -323,8 +323,7 @@ addAdditionalDevice(){
  done
  
  #Input and read device UDID
- #TO DO find a way to directly select UDID from the list instead of copy-paste
- udidSelectionList
+ device_selection_list
 
  #Check if device is already in the devices.txt file list
  devicePresentCheck=$(cat configs/devices.txt | grep ${device_udid})
@@ -333,8 +332,10 @@ addAdditionalDevice(){
   #Write to the devices file the first daevice
   echo "$device_name | $os_version | $device_udid | $appium_port | $wda_port | $mjpeg_port " >> configs/devices.txt
  else
-  echo "The selected device from the list is already added in devices.txt"
-  udidSelectionList
+  echo "The selected device is already added in devices.txt:"
+  echo "Line $(cat configs/devices.txt | grep -n ${device_udid})"
+  echo "============================================================================"
+  device_selection_list
  fi
 }
 
