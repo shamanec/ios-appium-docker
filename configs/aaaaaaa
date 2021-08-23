@@ -1,0 +1,4 @@
+appium -p 4841 --udid "00008030000418C136FB802E" --log-timestamp \
+   --default-capabilities \
+   '{"mjpegServerPort": '20101', "clearSystemFiles": "false", "webDriverAgentUrl":"'http://192.168.1.16:20001'", "preventWDAAttachments": "true", "simpleIsVisibleCheck": "true", "wdaLocalPort": "'20001'", "platformVersion": "'13.5.1'", "automationName":"XCUITest", "platformName": "iOS", "deviceName": "iPhone", "wdaLaunchTimeout": "120000", "wdaConnectionTimeout": "240000"}' \
+   --nodeconfig /home/kolio/ios-appium-docker/configs/nodeconfig.json
