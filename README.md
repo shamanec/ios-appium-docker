@@ -1,9 +1,9 @@
 ## Introduction
 
- * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and maintenance as possible. The project uses [electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli) to install and run WebDriverAgent from a prepared *.ipa file.   
+ * This is a solution for running Appium tests on real iOS devices on Linux with as little setup and manual maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
  * You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically.  
  * As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes.  
- * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
+ * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **5) Setup dependencies** control option from the script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
  * You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.  
  * If you follow this guide step by step you should have no issues running Appium tests on Linux without Xcode in no time.
 
@@ -14,10 +14,17 @@ This is by no means an exhaustive list and there might be more limitations prese
 
 ## Clone the project
 
+## Help
+
+1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section of the main script.
+2. The main starting point of the script is the **control** argument which presents a selection of all available options.
+
 ## Install project usage dependencies - currently Docker and unzip
 
-1. Execute **./services.sh install-dependencies**
+1. Execute **./services.sh control** and select option **5) Setup dependencies**
 2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
+
+**IMPORTANT** If you don't use this to setup dependencies you need to create **logs/** and **ipa/** folders in the main project folder yourself.
 
 ## Prepare WebDriverAgent.ipa file
 
@@ -36,8 +43,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
 
-## Set up the project
-1. Execute **./service.sh setup**
+## Set up the project environment vars
+1. Execute **./service.sh control** and select option **4) Setup environment vars**
 2. Provide the requested data - Selenium Hub Host, Selenium Hub port, devices host IP address and hub protocol(if connecting to Selenium Grid) and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
 ### or alternatively
@@ -53,7 +60,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 For more information on the variables you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#envtxt)
 
 ## Prepare devices file
-1. Execute **./gidevice list**
+1. Execute **./ios list**
 2. Get the UDIDs of all currently connected devices.
 3. Open(create) the **configs/devices.txt** file.
 4. Add each device using the same format, each on separate line:
@@ -62,22 +69,25 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 5. Use unique ports for Appium, WDA port and Mjpeg port for each device.
 
 ### or alternatively add device to the file using the script from list of connected devices
-1. Execute **./services.sh add-device**
+1. Execute **./services.sh control** and select option **9) Add a device**
 2. Type device name
 3. Select device from list of connected devices.
 4. It will be automatically added to the list in *devices.txt*
 
 ## Create the docker image
-1. Run **'docker build -t ios-appium .'** or execute **./services.sh build-image**
-2. Wait for the image to be created.
 
-#### Additional docker image note
+**Note** If you don't want to use the opencv4nodejs functionalities you can remove it from the installation in the Dockerfile which will reduce the image size with around 2GB and will improve building speed a lot.  
 
-1. You can remove the docker image using the script also by executing **./services.sh remove-image**
+1. Run **'docker build -t ios-appium .'** or execute **./services.sh control** and select option **7) Build Docker image**
+2. Wait for the image to be created - it will be named 'ios-appium' by default.
+
+#### Additional docker image notes
+
+1. You can remove the default docker image 'ios-appium' using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
 
 ## Prepare the Developer Disk Images
 
-1. Execute **./services.sh setup-disk-images**  
+1. Execute **./services.sh control** and select option **6) Setup developer disk images**  
 
 This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
 
@@ -90,18 +100,22 @@ This will clone the developer disk images repository and unzip the disk images f
 '*-v "{folder with the unzipped disk images}":/opt/DeveloperDiskImages*'
 
 ## Start the devices listener script
-1. Execute **./services.sh start**
+1. Execute **./services.sh control** and select option **1) Start listener - Grid**
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
-3. You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*
+
+### or alternatively if you won't connect to Selenium Grid
+1. Execute **./services.sh control** and select option **2) Start listener - No Grid**
+2. This will start the service with Appium servers without attempting Selenium Grid registration for local testing or different setup.
 
 **Note** You can find the listener logs in *logs/deviceSync.txt*  
+**Note** You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*  
 **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
 ## Kill the devices listener script
-1. Execute **./services.sh stop**
+1. Execute **./services.sh control** and select option **3) Stop listener**
 2. Confirm you want to stop the service and optionally destroy device containers
 
-You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh destroy-containers**
+You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh control** and selecting option **10) Destroy containers**
 
 ## Connect the devices to the machine (if not already connected)
 1. Run **docker ps -a | grep ios_device**
@@ -123,26 +137,23 @@ You can destroy all device containers easily later (if you opt not to when stopp
 
 ## Demo Java project
 1. Clone the [demo-project](https://github.com/shamanec/Java-Appium-iOS-Demo).
-2. Execute any/all of the 3 tests in the **Tests.java** class.
+2. Execute any/all of the 3 tests in the **Tests.java** class.  
  * **nativeTest()** - executes a simple test against the Preferences app using **Mobile.by.iOSClassChain("")** to identify and interact with an element.
+ * **nativeTestWithVideo()** - executes the same test as above but records the test execution and saves it to a video file in */src/main/resources*
  * **nativeImageTest()** - executes a simple test against the Preferences app using **Mobile.by.image("")** and the *opencv4nodejs* library to identify and interact with an element using provided image.
  * **safariTest()** - executes a simple test in the Safari browser
 
 ## Backup and restore project files
-1. Execute **./services.sh backup** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
-2. Execute **./services.sh restore** - you will be asked if you want to restore all or a particular file.
+1. Execute **./services.sh control** and select option **11) Backup project files** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
+2. Execute **./services.sh control** and select option **12) Restore project files** - you will be asked if you want to restore all or a particular file.
 
 ## Notes
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.
 2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
 3. **NB** This project was created with only one iOS device available so there might be unforeseen issues with installing WDA or mounting images on different iOS releases.
 
-## Help
-
-1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section on the main script.
-
 ## Thanks
 
 | |About|
 |---|---|
-|[electricbubble/gidevice-cli](https://github.com/electricbubble/gidevice-cli)|Cudos for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
+|[go-ios](https://github.com/danielpaulus/go-ios)|Many thanks for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|

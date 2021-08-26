@@ -1,36 +1,28 @@
 #!/bin/bash
 
 #Start the WebDriverAgent on specific WDA and MJPEG ports
-start-wda-gidevice() {
+start-wda-go-ios() {
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Starting WebDriverAgent application on port $WDA_PORT"
- ./gidevice/gidevice -u $DEVICE_UDID xctest $WDA_BUNDLEID --env=USE_PORT=$WDA_PORT --env=MJPEG_SERVER_PORT=$MJPEG_PORT > "/opt/logs/wdaLogs.txt" 2>&1 &
+ ./go-ios/ios runwda --bundleid=$WDA_BUNDLEID --testrunnerbundleid=$WDA_BUNDLEID --xctestconfig=WebDriverAgentRunner.xctest --env USE_PORT=$WDA_PORT --env MJPEG_PORT=$MJPEG_PORT --udid $DEVICE_UDID > "/opt/logs/wdaLogs.txt" 2>&1 &
  sleep 2
 }
 
-#Kill the WebDriverAgent app if running on the device
+#Kill the WebDriverAgent app if running on the device or just in case
 kill-wda() {
- if ./gidevice/gidevice ps -u $DEVICE_UDID | grep $WDA_BUNDLEID
+ if ./go-ios/ios ps --udid $DEVICE_UDID | grep $WDA_BUNDLEID
  then
   echo "[$(date +'%d/%m/%Y %H:%M:%S')] Attempting to kill WDA app on device"
-  ./gidevice/gidevice -u $DEVICE_UDID kill $WDA_BUNDLEID
+  ./go-ios/ios kill $WDA_BUNDLEID --udid=$DEVICE_UDID
   sleep 2
- fi
-}
-
-#Uninstall the WebDriverAgent app from the device
-uninstall-wda() {
- if ./gidevice/gidevice applist -u $DEVICE_UDID | grep $WDA_BUNDLEID
- then
-  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Uninstalling WDA from the device"
-  ./gidevice/gidevice -u $DEVICE_UDID uninstall $WDA_BUNDLEID
-  sleep 1
+ else
+  echo "WebDriverAgent is not currently running on the device, nothing to kill."
  fi
 }
 
 #Install the WebDriverAgent app on the device
 install-wda() {
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Installing WDA application on device"
- ./gidevice/gidevice -u $DEVICE_UDID install /opt/WebDriverAgent.ipa
+ ./go-ios/ios install --path=/opt/WebDriverAgent.ipa --udid=$DEVICE_UDID
  sleep 5
 }
 
@@ -38,16 +30,16 @@ install-wda() {
 start-wda() {
  deviceIP=""
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] WDA service is not running/accessible. Attempting to start/restart WDA service..."
- uninstall-wda
  install-wda
- start-wda-gidevice
+ start-wda-go-ios
  #Parse the device IP address from the WebDriverAgent logs using the ServerURL
- for i in {1..5}
+ #We are trying several times because it takes a few seconds to start the WDA but we want to avoid hardcoding specific seconds wait
+ for i in {1..10}
  do
   if [ -z "$deviceIP" ]
    then
-    deviceIP=`grep "ServerURLHere->" "/opt/logs/wdaLogs.txt" | cut -d ':' -f 5`
-    sleep 3
+    deviceIP=`grep "ServerURLHere-" "/opt/logs/wdaLogs.txt" | cut -d ':' -f 7`
+    sleep 2
    else
     break
    fi
@@ -64,6 +56,10 @@ check-wda-status() {
     kill-wda
     start-wda
  fi
+}
+
+#Hit the Appium status URL to see if it is available and start it if not
+check-appium-status() {
  if curl -Is "http://127.0.0.1:${APPIUM_PORT}/wd/hub/status" | head -1 | grep -q '200 OK'
      then
       echo "[$(date +'%d/%m/%Y %H:%M:%S')] Appium is already running. Nothing to do"
@@ -73,6 +69,7 @@ check-wda-status() {
 }
 
 #Start appium server for the device
+#If the device is on Selenium Grid use created nodeconfig.json, if not - skip applying it in the command
 start-appium() {
  if [ ${ON_GRID} == "true" ]
   then
@@ -90,9 +87,17 @@ start-appium() {
 }
 
 #Mount the respective Apple Developer Disk Image for the current device OS version
+#Skip mounting images if they are already mounted
 mount-disk-images() {
- major_device_version=$(echo "$DEVICE_OS_VERSION" | cut -f1,2 -d '.')
- ./gidevice/gidevice -u $DEVICE_UDID mount /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg /opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg.signature
+ if ./go-ios/ios image list --udid=$DEVICE_UDID  2>&1 | grep "none"
+ then
+  echo "Could not find Developer disk images on the device"
+  major_device_version=$(echo "$DEVICE_OS_VERSION" | cut -f1,2 -d '.')
+  echo "Mounting Developer disk images for major OS version $major_device_version"
+  ./go-ios/ios image mount --path=/opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg --udid=$DEVICE_UDID
+ else
+  echo "Developer disk images are already mounted on the device, nothing to do."
+ fi
 }
 
 
@@ -106,4 +111,5 @@ mount-disk-images >> "/opt/logs/wdaSync.txt"
 while true
  do
   check-wda-status >> "/opt/logs/wdaSync.txt"
+  check-appium-status >> "/opt/logs/wdaSync.txt"
  done
