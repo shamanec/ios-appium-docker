@@ -23,7 +23,7 @@
 
  * This is the cornerstone of keeping the WebDriverAgent up and running on the device as long as possible or in an ideal scenario - indefinitely as long as the device is working and connected to the machine.
  * Please refer to the very ugly diagram below:  
-<img src="https://iili.io/RlA29I.png" width="100%" height="100%">  
+<img src="https://iili.io/RMFEf2.png" width="100%" height="100%">  
 
  * The script uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run the WebDriverAgent
  * The script also uses the *go-ios* to mount the Developer Disk Images to the device - you should already have them prepared as described in the main project Readme.md
