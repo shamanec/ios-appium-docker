@@ -3,7 +3,7 @@
  * This is a work in progress solution for running Appium tests on real iOS devices on Linux with as little setup and manual maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
  * You can easily add devices to the project, then the listener checks if the devices in the list are connected to the machine and creates/destroys containers automagically.  
  * As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes.  
- * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **install-dependencies** script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
+ * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **5) Setup dependencies** control option from the script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
  * You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.  
  * If you follow this guide step by step you should have no issues running Appium tests on Linux without Xcode in no time.
 
@@ -16,7 +16,7 @@ This is by no means an exhaustive list and there might be more limitations prese
 
 ## Install project usage dependencies - currently Docker and unzip
 
-1. Execute **./services.sh install-dependencies**
+1. Execute **./services.sh control** and select option **5) Setup dependencies**
 2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
 
 ## Prepare WebDriverAgent.ipa file
@@ -36,8 +36,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
 
-## Set up the project
-1. Execute **./service.sh setup**
+## Set up the project environment vars
+1. Execute **./service.sh control** and select option **4) Setup environment vars**
 2. Provide the requested data - Selenium Hub Host, Selenium Hub port, devices host IP address and hub protocol(if connecting to Selenium Grid) and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
 ### or alternatively
@@ -62,24 +62,22 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 5. Use unique ports for Appium, WDA port and Mjpeg port for each device.
 
 ### or alternatively add device to the file using the script from list of connected devices
-1. Execute **./services.sh add-device**
+1. Execute **./services.sh control** and select option **9) Add a device**
 2. Type device name
 3. Select device from list of connected devices.
 4. It will be automatically added to the list in *devices.txt*
 
 ## Create the docker image
-1. Run **'docker build -t ios-appium .'** or execute **./services.sh build-image**
+1. Run **'docker build -t ios-appium .'** or execute **./services.sh control** and select option **7) Build Docker image**
 2. Wait for the image to be created - it will be named 'ios-appium' by default.
 
 #### Additional docker image notes
 
-1. You can remove the default docker image 'ios-appium' using the script also by executing **./services.sh remove-image**.
-2. You can build a specific docker image by providing name as argument. Example: **./services.sh build-image test**
-3. You can remove a specific docker image by providing name as argument. Example: **./services.sh remove-image test**
+1. You can remove the default docker image 'ios-appium' (or another) using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
 
 ## Prepare the Developer Disk Images
 
-1. Execute **./services.sh setup-disk-images**  
+1. Execute **./services.sh control** and select option **6) Setup developer disk images**  
 
 This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
 
@@ -92,11 +90,11 @@ This will clone the developer disk images repository and unzip the disk images f
 '*-v "{folder with the unzipped disk images}":/opt/DeveloperDiskImages*'
 
 ## Start the devices listener script
-1. Execute **./services.sh start**
+1. Execute **./services.sh control** and select option **1) Start listener - Grid**
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
 
 ### or alternatively if you won't connect to Selenium Grid
-1. Execute **./services.sh start no-grid**
+1. Execute **./services.sh control** and select option **2) Start listener - No Grid**
 2. This will start the service with Appium servers without attempting Selenium Grid registration for local testing or different setup.
 
 **Note** You can find the listener logs in *logs/deviceSync.txt*  
@@ -104,10 +102,10 @@ This will clone the developer disk images repository and unzip the disk images f
 **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
 ## Kill the devices listener script
-1. Execute **./services.sh stop**
+1. Execute **./services.sh control** and select option **3) Stop listener**
 2. Confirm you want to stop the service and optionally destroy device containers
 
-You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh destroy-containers**
+You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh control** and selecting option **10) Destroy containers**
 
 ## Connect the devices to the machine (if not already connected)
 1. Run **docker ps -a | grep ios_device**
@@ -135,8 +133,8 @@ You can destroy all device containers easily later (if you opt not to when stopp
  * **safariTest()** - executes a simple test in the Safari browser
 
 ## Backup and restore project files
-1. Execute **./services.sh backup** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
-2. Execute **./services.sh restore** - you will be asked if you want to restore all or a particular file.
+1. Execute **./services.sh control** and select option **11) Backup project files** - you will be asked if you want to backup all or a particular file. The files will be copied in the main project folder in **backup** folder.
+2. Execute **./services.sh control** and select option **12) Restore project files** - you will be asked if you want to restore all or a particular file.
 
 ## Notes
 1. It is possible that the device needs to be connected at least once to Xcode before being able to install WDA ipa on it - can't really confirm because I have only one device.

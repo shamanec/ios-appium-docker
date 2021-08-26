@@ -1,101 +1,91 @@
 #!/bin/bash
 
-#==========================SETUP FUNCTIONS==========================#
+#==========================CONTROL FUNCTIONS==========================#
 #===================================================================#
-setup() {
-  echo "Are you registering the devices on Selenium Grid? Yes/No"
-  select yn in "Yes" "No"; do
-    case $yn in
-    Yes)
-      add-hub-host
-      add-hub-port
-      add-devices-host
-      add-hub-protocol
+control-function() {
+  echo "Please select one of the options below: "
+  control_options
+  while true
+  do
+    echo "//====================================//"
+    echo "Would you like to select another option?"
+    select yn in "Yes" "No"; do
+      case $yn in
+      Yes)
+        control_options
+        break
+        ;;
+      No)
+        exit
+        ;;
+      esac
+    done
+  done
+}
+
+control_options() {
+  control_options=("Start listener - Grid" "Start listener - No Grid" "Stop listener" "Setup environment vars" "Setup dependencies" "Setup developer disk images" "Build Docker image" "Remove Docker image" "Add a device" "Destroy containers" "Backup project files" "Restore project files" "Help")
+  select option in "${control_options[@]}"; do
+    case $option in
+    "Start listener - Grid")
+      ./listener_script.sh
       break
       ;;
-    No)
-      add-wda-bundleID
-      exit
+    "Start listener - No Grid")
+      ./listener_script.sh no-grid
+      break
+      ;;
+    "Stop listener")
+      stop_service
+      ;;
+    "Setup environment vars")
+      setup_environment_vars
+      break
+      ;;
+    "Setup developer disk images")
+      setup_developer_disk_images
+      break
+      ;;
+    "Setup dependencies")
+      install_dependencies
+      break
+      ;;
+    "Build Docker image")
+      docker_build
+      break
+      ;;
+    "Remove Docker image")
+      remove_docker_image
+      break
+      ;;
+    "Add a device")
+      add_device
+      break
+      ;;
+    "Destroy containers")
+      destroy_containers
+      break
+      ;;
+    "Backup project files")
+      backup
+      break
+      ;;
+    "Restore project files")=
+      restore
+      break
+      ;;
+    "Help")
+      echo_help
+      break
       ;;
     esac
   done
-  add-wda-bundleID
-}
-
-add-hub-host() {
-  read -p "Enter the IP address of the Selenium Hub Host: " hub_host
-  while :; do
-    if [[ -z "$hub_host" ]]; then
-      read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host
-    else
-      case ${hub_host} in
-      *\ *) read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host ;;
-      *) break ;;
-      esac
-    fi
-  done
-  sed -i "s/SELENIUM_HUB_HOST=.*/SELENIUM_HUB_HOST=$hub_host/g" configs/env.txt
-}
-
-add-hub-port() {
-  read -p "Enter the Selenium Hub Port: " hub_port
-  while :; do
-    if [[ -z "$hub_port" ]] || [[ "$hub_port" =~ ^[A-za-z]+$ ]]; then
-      read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port
-    else
-      case ${hub_port} in
-      *\ *) read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port ;;
-      *) break ;;
-      esac
-    fi
-  done
-  sed -i "s/SELENIUM_HUB_PORT=.*/SELENIUM_HUB_PORT=$hub_port/g" configs/env.txt
-}
-
-add-devices-host() {
-  read -p "Enter the IP address of the devices host machine: " devices_host
-  while :; do
-    if [[ -z "$devices_host" ]]; then
-      read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host
-    else
-      case ${devices_host} in
-      *\ *) read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host ;;
-      *) break ;;
-      esac
-    fi
-  done
-  sed -i "s/DEVICES_HOST_IP=.*/DEVICES_HOST_IP=$devices_host/g" configs/env.txt
-}
-
-add-hub-protocol() {
-  echo "Please select the hub protocol: http/https"
-  select protocol in "http" "https"; do
-    sed -i "s/HUB_PROTOCOL=.*/HUB_PROTOCOL=$protocol/g" configs/env.txt
-    break
-  done
-}
-
-add-wda-bundleID() {
-  read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner). Type and press Enter or press Enter to select default value: " -r bundle_id
-  while :; do
-    if [[ -z "$bundle_id" ]]; then
-      echo "No bundleID provided, using default value: com.shamanec.WebDriverAgentRunner.xctrunner"
-      bundle_id="com.shamanec.WebDriverAgentRunner.xctrunner"
-      break
-    else
-      case ${bundle_id} in
-      *\ *) read -p "Invalid input, WebDriverAgent bundleID cannot contain spaces. Enter the bundleID again: " -r bundle_id ;;
-      *) break ;;
-      esac
-    fi
-  done
-  sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
 }
 
 #=====================SERVICE AND CONTAINER FUNCTIONS=======================#
 #===========================================================================#
 
-startContainer() {
+start_container() {
   on_grid=$1
   echo "================================================================"
   #Generate logs dir name for the specific device
@@ -146,7 +136,7 @@ startContainer() {
     ios-appium >>"logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
 }
 
-start-service() {
+start_service() {
   on_grid=$1
   devices=configs/devices.txt
   while true; do
@@ -182,7 +172,7 @@ start-service() {
         containerOutput=$(docker ps -a | grep "$udid")
         #If container doesn't exist - create one
         if [ -z "$containerOutput" ]; then
-          startContainer "$on_grid"
+          start_container "$on_grid"
         #If container already exists - do nothing
         else
           now="$(date +'%d/%m/%Y %H:%M:%S')"
@@ -195,9 +185,9 @@ start-service() {
   done
 }
 
-stop-service() {
+stop_service() {
   #Get the process ID of the running listener script
-  processID=$(ps aux | grep './services.sh start' | grep -v grep | awk '{print $2}')
+  processID=$(ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}')
   #If there is no running listener process do nothing
   if [ -z "$processID" ]; then
     echo "The service is not running. Nothing to do."
@@ -209,11 +199,11 @@ stop-service() {
       case $yn in
       Yes)
 	#Kill the running listener process and ask to destroy containers
-        kill-service "$processID"
+        kill_service "$processID"
         echo "Do you also wish to destroy the devices containers? Yes/No"
         select yn in "Yes" "No"; do
           case $yn in
-          Yes) destroy-containers ;;
+          Yes) destroy_containers ;;
           No)
             echo "Closing..."
             sleep 2
@@ -234,12 +224,12 @@ stop-service() {
   fi
 }
 
-kill-service() {
+kill_service() {
   kill -9 "$1"
   echo "Listening service stopped".
 }
 
-destroy-containers() {
+destroy_containers() {
   #Stop and remove all containers that contain 'ios_device' in their names
   docker stop "$(docker ps -aqf "name=^ios_device_")"
   docker rm "$(docker ps -aqf "name=^ios_device_")"
@@ -251,14 +241,29 @@ destroy-containers() {
 #======================ADD DEVICE TO LIST FUNCTIONS==========================#
 #============================================================================#
 
-add-device() {
+add_device() {
   #If there is no devices.txt file then execute the script for adding first device
   if ! [ -s configs/devices.txt ]; then
-    addFirstDevice
+    add_first_device
   #If there is a devices.txt file already created execute the script for adding additional devices
   else
-    addAdditionalDevice
+    add_additional_device
   fi
+  while true
+    do
+      echo "Would you like to add another device?"
+      select yn in "Yes" "No"; do
+        case $yn in
+        Yes)
+          add_additional_device
+          break
+          ;;
+        No)
+          break
+          ;;
+        esac
+      done
+    done
 }
 
 #This method lists the UDIDs of all connected real devices with selection
@@ -281,7 +286,7 @@ device_selection_list() {
 }
 
 #Method for adding the first device to devices.txt
-addFirstDevice() {
+add_first_device() {
   device_name=""
   device_udid=""
   os_version=""
@@ -309,7 +314,7 @@ addFirstDevice() {
 }
 
 #Method for adding additional devices to devices.txt
-addAdditionalDevice() {
+add_additional_device() {
   device_name=""
   device_udid=""
   os_version=""
@@ -346,7 +351,7 @@ addAdditionalDevice() {
   #Check if device is already in the devices.txt file list
   devicePresentCheck=$(cat configs/devices.txt | grep ${device_udid})
   if [ -z "$devicePresentCheck" ]; then
-    #Write to the devices file the first daevice
+    #Write to the devices file the first device
     echo "$device_name | $os_version | $device_udid | $appium_port | $wda_port | $mjpeg_port " >>configs/devices.txt
   else
     echo "The selected device is already added in devices.txt:"
@@ -356,8 +361,98 @@ addAdditionalDevice() {
   fi
 }
 
-#====================SETUP DEPENDENCIES FUNCTIONS=====================#
+#====================SETUP DEPENDENCIES AND ENVIRONMENT FUNCTIONS=====================#
 #=====================================================================#
+
+setup_environment_vars() {
+  echo "Are you registering the devices on Selenium Grid? Yes/No"
+  select yn in "Yes" "No"; do
+    case $yn in
+    Yes)
+      add_hub_host
+      add_hub_port
+      add_devices_host
+      add_hub_protocol
+      break
+      ;;
+    No)
+      add_wda_bundleID
+      exit
+      ;;
+    esac
+  done
+  add_wda_bundleID
+}
+
+add_hub_host() {
+  read -p "Enter the IP address of the Selenium Hub Host: " hub_host
+  while :; do
+    if [[ -z "$hub_host" ]]; then
+      read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host
+    else
+      case ${hub_host} in
+      *\ *) read -p "Invalid input, the Selenium Hub Host cannot contain spaces and cannot be empty. Enter the Selenium Hub Host again: " hub_host ;;
+      *) break ;;
+      esac
+    fi
+  done
+  sed -i "s/SELENIUM_HUB_HOST=.*/SELENIUM_HUB_HOST=$hub_host/g" configs/env.txt
+}
+
+add_hub_port() {
+  read -p "Enter the Selenium Hub Port: " hub_port
+  while :; do
+    if [[ -z "$hub_port" ]] || [[ "$hub_port" =~ ^[A-za-z]+$ ]]; then
+      read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port
+    else
+      case ${hub_port} in
+      *\ *) read -p "Invalid input, the Selenium Hub Port cannot contain spaces, cannot be empty and cannot contain characters. Enter the Selenium Hub Port again: " hub_port ;;
+      *) break ;;
+      esac
+    fi
+  done
+  sed -i "s/SELENIUM_HUB_PORT=.*/SELENIUM_HUB_PORT=$hub_port/g" configs/env.txt
+}
+
+add_devices_host() {
+  read -p "Enter the IP address of the devices host machine: " devices_host
+  while :; do
+    if [[ -z "$devices_host" ]]; then
+      read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host
+    else
+      case ${devices_host} in
+      *\ *) read -p "Invalid input, the devices host IP address cannot contain spaces and cannot be empty. Enter the devices host IP address again: " devices_host ;;
+      *) break ;;
+      esac
+    fi
+  done
+  sed -i "s/DEVICES_HOST_IP=.*/DEVICES_HOST_IP=$devices_host/g" configs/env.txt
+}
+
+add_hub_protocol() {
+  echo "Please select the hub protocol: http/https"
+  select protocol in "http" "https"; do
+    sed -i "s/HUB_PROTOCOL=.*/HUB_PROTOCOL=$protocol/g" configs/env.txt
+    break
+  done
+}
+
+add_wda_bundleID() {
+  read -p "Enter your WebDriverAgent bundleID (Example: com.shamanec.WebDriverAgentRunner.xctrunner). Type and press Enter or press Enter to select default value: " -r bundle_id
+  while :; do
+    if [[ -z "$bundle_id" ]]; then
+      echo "No bundleID provided, using default value: com.shamanec.WebDriverAgentRunner.xctrunner"
+      bundle_id="com.shamanec.WebDriverAgentRunner.xctrunner"
+      break
+    else
+      case ${bundle_id} in
+      *\ *) read -p "Invalid input, WebDriverAgent bundleID cannot contain spaces. Enter the bundleID again: " -r bundle_id ;;
+      *) break ;;
+      esac
+    fi
+  done
+  sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
+}
 
 setup_developer_disk_images() {
   #Clone the disk images from the repo into new folder name DeveloperDiskImages
@@ -369,7 +464,7 @@ setup_developer_disk_images() {
 }
 
 #Build Docker image
-docker-build() {
+docker_build() {
   image_name=$1
   if [ "$image_name" != "" ]; then
     docker build -t $image_name .
@@ -379,7 +474,7 @@ docker-build() {
 }
 
 #Delete Docker image from local repo
-remove-docker-image() {
+remove_docker_image() {
   image_name=$1
   if [ "$image_name" != "" ]; then
     docker rmi "$(docker images -q $image_name)"
@@ -389,17 +484,17 @@ remove-docker-image() {
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
-install-dependencies() {
+install_dependencies() {
   echo "You are about to install Docker, do you wish to continue? Yes/No"
   select yn in "Yes" "No"; do
     case $yn in
     Yes)
-      installDocker
+      install_docker
       echo "You are about to allow Docker commands without sudo, do you wish to continue? Yes/No"
       select yn in "Yes" "No"; do
         case $yn in
         Yes)
-          executeDockerNoSudo
+          execute_docker_no_sudo
           break
           ;;
         No) break ;;
@@ -425,7 +520,7 @@ install-dependencies() {
 }
 
 #INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
-installDocker() {
+install_docker() {
   #Update your existing list of packages
   sudo apt update
   #Install prerequisites
@@ -443,7 +538,7 @@ installDocker() {
 }
 
 #EXECUTING DOCKER COMMANDS WITHOUT SUDO
-executeDockerNoSudo() {
+execute_docker_no_sudo() {
   #Add your username to docker group
   sudo usermod -aG docker "${USER}"
   #Confirm the user is added with:
@@ -505,34 +600,34 @@ restore() {
         sleep 2
         exit 0
       fi
-      check-file-existence "$(pwd)/backup"
+      check_file_existence "$(pwd)/backup"
       cp backup/services.sh services.sh &&
         cp backup/Dockerfile Dockerfile &&
         cp -r backup/configs/* configs
       ;;
     "backup/services.sh")
-      check-file-existence "backup/services.sh"
-      restore-file "$opt" services.sh
+      check_file_existence "backup/services.sh"
+      restore_file "$opt" services.sh
       ;;
     "backup/Dockerfile")
-      check-file-existence "backup/Dockerfile"
-      restore-file "$opt" Dockerfile
+      check_file_existence "backup/Dockerfile"
+      restore_file "$opt" Dockerfile
       ;;
     "backup/configs/wdaSync.sh")
-      check-file-existence "backup/configs/wdaSync.sh"
-      restore-file "$opt" configs/wdaSync.sh
+      check_file_existence "backup/configs/wdaSync.sh"
+      restore_file "$opt" configs/wdaSync.sh
       ;;
     "backup/configs/nodeconfiggen.sh")
-      check-file-existence "backup/configs/nodeconfiggen.sh"
-      restore-file "$opt" configs/nodeconfiggen.sh
+      check_file_existence "backup/configs/nodeconfiggen.sh"
+      restore_file "$opt" configs/nodeconfiggen.sh
       ;;
     "backup/configs/env.txt")
-      check-file-existence "backup/configs/env.txt"
-      restore-file "$opt" configs/env.txt
+      check_file_existence "backup/configs/env.txt"
+      restore_file "$opt" configs/env.txt
       ;;
     "backup/configs/devices.txt")
-      check-file-existence "backup/configs/devices.txt"
-      restore-file "$opt" configs/devices.txt
+      check_file_existence "backup/configs/devices.txt"
+      restore_file "$opt" configs/devices.txt
       ;;
     *) echo "Invalid option selected. Please try again.." ;;
     esac
@@ -542,7 +637,7 @@ restore() {
   sleep 1
 }
 
-check-file-existence() {
+check_file_existence() {
   fileName=$1
   if [ ! -f "$fileName" ]; then
     echo "$fileName does not exist, nothing restored. Closing..."
@@ -551,7 +646,7 @@ check-file-existence() {
   fi
 }
 
-restore-file() {
+restore_file() {
   backUpFilePath=$1
   targetPath=$2
   cp "$backUpFilePath" "$targetPath"
@@ -561,72 +656,32 @@ restore-file() {
 #========================================================#
 echo_help() {
   echo "
-      Usage: ./services.sh [option]
+      Usage: ./services.sh [argument]
       Flags:
           -h    Print help
       Arguments:
-          start                     		Starts the device listener which creates/destroys containers upon connecting/disconnecting
-	  start-no-grid             		Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
-          stop  	            		Stops the device listener. Also provides option to destroy containers after stopping service.
-          add-device	            		Allows to add a device to devices.txt file automatically from connected devices
-          restart-container         		Allows to restart a container by providing the device UDID - TODO
-	  create-container          		Allows to start a single container without the listening service by providing the device UDID - TODO
-          destroy-containers        		Stops and removes all iOS device containers
-	  setup-disk-images         		Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
-	  build-image [image name]  		Creates a Docker image called 'ios-appium' based on the Dockerfile by default. You can also provide image name as argument
-          remove-image	[image name]            Removes the 'ios-appium' Docker image from the local repo by default. You can also provide image name as argument
-	  install-dependencies      		Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
-	  setup		            		Provide Selenium Hub Host and Port if connecting to Selenium Grid. Provide WDA bundleId.
-          backup                    		Backup all or particular project files before working on them.
-          restore                   		Restore files from backup"
-  exit 0
+          control                               Presents a selection of controls that consists of all available options that you can select from.
+      Control options:
+          1) Start listener - Grid              Starts the device listener which creates/destroys containers upon connecting/disconnecting
+	  2) Start listener - No Grid           Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
+          3) Stop listener  	                Stops the device listener. Also provides option to destroy containers after stopping service.
+	  4) Setup environment vars		Update the Selenium Grid host, Selenium Grid port, Selenium Grid protocol type, current devices host and WebDriverAgent bundleID in the env.txt file.
+	  5) Setup dependencies			Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
+	  6) Setup developer disk images	Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
+	  7) Build Docker image			Creates a Docker image called 'ios-appium' based on the Dockerfile by default or with a provided name.
+	  8) Remove Docker image		Removes the 'ios-appium' Docker image from the local repo by default or with a provided name.
+	  9) Add a device			Allows to add a device to devices.txt file automatically from connected devices
+	  10) Destroy containers		Stops and removes all iOS device containers
+	  11) Backup project files		Backup all or particular project files before working on them.
+	  12) Restore project files		Restore files from backup
+	  13) Help				Print this section"
 }
 
 #=======================MAIN SCRIPT=======================#
 #=========================================================#
 case "$1" in
-start)
-  start-service $2 >>"logs/deviceSync.txt" 2>&1 &
-  ;;
-stop)
-  stop-service
-  ;;
-add-device)
-  add-device
-  ;;
-restart-container)
-  echo "Functionality pending development."
-  sleep 3
-  exit 0
-  ;;
-create-container)
-  echo "Functionality pending development."
-  sleep 3
-  exit 0
-  ;;
-destroy-containers)
-  destroy-containers
-  ;;
-setup-disk-images)
-  setup_developer_disk_images
-  ;;
-build-image)
-  docker-build $2
-  ;;
-remove-image)
-  remove-docker-image $2
-  ;;
-install-dependencies)
-  install-dependencies
-  ;;
-setup)
-  setup
-  ;;
-backup)
-  backup
-  ;;
-restore)
-  restore
+control)
+  control-function
   ;;
 -h)
   echo_help
