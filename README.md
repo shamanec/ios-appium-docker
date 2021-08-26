@@ -24,6 +24,8 @@ This is by no means an exhaustive list and there might be more limitations prese
 1. Execute **./services.sh control** and select option **5) Setup dependencies**
 2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
 
+**IMPORTANT** If you don't use this to setup dependencies you need to create **logs/** and **ipa/** folders in the main project folder yourself.
+
 ## Prepare WebDriverAgent.ipa file
 
 You need an Apple Developer account to sign and build **WebDriverAgent**
@@ -73,6 +75,9 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 4. It will be automatically added to the list in *devices.txt*
 
 ## Create the docker image
+
+**Note** If you don't want to use the opencv4nodejs functionalities you can remove it from the installation in the Dockerfile which will reduce the image size with around 2GB and will improve building speed a lot.  
+
 1. Run **'docker build -t ios-appium .'** or execute **./services.sh control** and select option **7) Build Docker image**
 2. Wait for the image to be created - it will be named 'ios-appium' by default.
 
