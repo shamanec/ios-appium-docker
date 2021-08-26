@@ -586,10 +586,7 @@ echo_help() {
 #=========================================================#
 case "$1" in
 start)
-  start-service >>"logs/deviceSync.txt" 2>&1 &
-  ;;
-start-no-grid)
-  start-service no-grid >>"logs/deviceSync.txt" 2>&1 &
+  start-service $2 >>"logs/deviceSync.txt" 2>&1 &
   ;;
 stop)
   stop-service
