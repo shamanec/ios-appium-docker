@@ -12,6 +12,7 @@ control-function() {
     select yn in "Yes" "No"; do
       case $yn in
       Yes)
+	echo "Please select one of the options below: "
         control_options
         break
         ;;
@@ -465,22 +466,12 @@ setup_developer_disk_images() {
 
 #Build Docker image
 docker_build() {
-  image_name=$1
-  if [ "$image_name" != "" ]; then
-    docker build -t $image_name .
-  else
     docker build -t ios-appium .
-  fi
 }
 
 #Delete Docker image from local repo
 remove_docker_image() {
-  image_name=$1
-  if [ "$image_name" != "" ]; then
-    docker rmi "$(docker images -q $image_name)"
-  else
     docker rmi "$(docker images -q ios-appium)"
-  fi
 }
 
 #Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
@@ -660,19 +651,19 @@ echo_help() {
       Flags:
           -h    Print help
       Arguments:
-          control                               Presents a selection of controls that consists of all available options that you can select from.
+          control                               Presents a selection of controls that consists of all available options that you can select from
       Control options:
           1) Start listener - Grid              Starts the device listener which creates/destroys containers upon connecting/disconnecting
 	  2) Start listener - No Grid           Starts the device listener which creates containers that do not register Appium servers on Selenium Grid
-          3) Stop listener  	                Stops the device listener. Also provides option to destroy containers after stopping service.
-	  4) Setup environment vars		Update the Selenium Grid host, Selenium Grid port, Selenium Grid protocol type, current devices host and WebDriverAgent bundleID in the env.txt file.
+          3) Stop listener  	                Stops the device listener. Also provides option to destroy containers after stopping service
+	  4) Setup environment vars		Update the Selenium Grid host, Selenium Grid port, Selenium Grid protocol type, current devices host and WebDriverAgent bundleID in the env.txt file
 	  5) Setup dependencies			Install the neeeded dependencies to use the project - currently only Docker and unzip. Tested on Ubuntu 18.04.5
 	  6) Setup developer disk images	Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
-	  7) Build Docker image			Creates a Docker image called 'ios-appium' based on the Dockerfile by default or with a provided name.
-	  8) Remove Docker image		Removes the 'ios-appium' Docker image from the local repo by default or with a provided name.
+	  7) Build Docker image			Creates a Docker image called 'ios-appium' based on the Dockerfile by default
+	  8) Remove Docker image		Removes the 'ios-appium' Docker image from the local repo
 	  9) Add a device			Allows to add a device to devices.txt file automatically from connected devices
 	  10) Destroy containers		Stops and removes all iOS device containers
-	  11) Backup project files		Backup all or particular project files before working on them.
+	  11) Backup project files		Backup all or particular project files before working on them
 	  12) Restore project files		Restore files from backup
 	  13) Help				Print this section"
 }

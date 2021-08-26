@@ -14,6 +14,11 @@ This is by no means an exhaustive list and there might be more limitations prese
 
 ## Clone the project
 
+## Help
+
+1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section of the main script.
+2. The main starting point of the script is the **control** argument which presents a selection of all available options.
+
 ## Install project usage dependencies - currently Docker and unzip
 
 1. Execute **./services.sh control** and select option **5) Setup dependencies**
@@ -73,7 +78,7 @@ iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
 
 #### Additional docker image notes
 
-1. You can remove the default docker image 'ios-appium' (or another) using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
+1. You can remove the default docker image 'ios-appium' using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
 
 ## Prepare the Developer Disk Images
 
@@ -141,12 +146,8 @@ You can destroy all device containers easily later (if you opt not to when stopp
 2. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
 3. **NB** This project was created with only one iOS device available so there might be unforeseen issues with installing WDA or mounting images on different iOS releases.
 
-## Help
-
-1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section on the main script.
-
 ## Thanks
 
 | |About|
 |---|---|
-|[go-ios](https://github.com/danielpaulus/go-ios)|Cudos for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
+|[go-ios](https://github.com/danielpaulus/go-ios)|Many thanks for creating this tool to communicate with iOS devices on Linux, perfect for installing/reinstalling and running WebDriverAgentRunner without Xcode|
