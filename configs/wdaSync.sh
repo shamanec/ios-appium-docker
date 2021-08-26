@@ -89,12 +89,12 @@ start-appium() {
 #Mount the respective Apple Developer Disk Image for the current device OS version
 #Skip mounting images if they are already mounted
 mount-disk-images() {
- if ./go-ios/ios image list --udid=$DEVICE_UDID | grep "failed getting image list"
+ if ./go-ios/ios image list --udid=$DEVICE_UDID  2>&1 | grep "none"
  then
   echo "Could not find Developer disk images on the device"
   major_device_version=$(echo "$DEVICE_OS_VERSION" | cut -f1,2 -d '.')
   echo "Mounting Developer disk images for major OS version $major_device_version"
-  ./go-ios/ios image mount --path=/opt/DeveloperDiskImages/$major_device_version/ --udid=$DEVICE_UDID
+  ./go-ios/ios image mount --path=/opt/DeveloperDiskImages/$major_device_version/DeveloperDiskImage.dmg --udid=$DEVICE_UDID
  else
   echo "Developer disk images are already mounted on the device, nothing to do."
  fi
