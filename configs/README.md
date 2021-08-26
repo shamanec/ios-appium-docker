@@ -22,7 +22,7 @@
 ## wdaSync.sh
 
  * This is the cornerstone of keeping the WebDriverAgent up and running on the device as long as possible or in an ideal scenario - indefinitely as long as the device is working and connected to the machine.
- * Please refer to the very ugly diagram below:  
+ * Please refer to the diagram below:  
 <img src="https://iili.io/RMFEf2.png" width="100%" height="100%">  
 
  * The script uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run the WebDriverAgent
