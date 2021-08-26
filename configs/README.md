@@ -8,7 +8,7 @@
  * DEVICES_HOST_IP should be the IP address of the current machine that will provide the devices if you are connecting to Selenium Grid.
  * **Important** The Selenium Grid setup was tested on a local network so you might need adjustments in **env.txt**, **nodeconfiggen.sh** script and the *start-container* function in the **services.sh** script depending on your current setup.
  * WDA_BUNDLE_ID can be left as is (cannot guarantee on 100% you will be able to use mine) or provide the bundle ID of the WDA you built yourself.  
- **NOTE** You can update those values through the main script by executing **./services.sh setup**.
+ **NOTE** You can update those values through the main script by executing **./services.sh control** and selecting option **4) Setup environment vars**.
 
 ## devices.txt
 
@@ -17,7 +17,7 @@
  * Each device needs to be added in the following format:  
    **Device name | Device OS version | Device UDID | Appium port | WDA port | WDA Mjpeg port**  
    You can follow the convention of the provided file for the port numbers.
- * Additionally you can add a new device to the file by connecting it to the machine and executing **./services.sh add-device** from the main script.
+ * Additionally you can add a new device to the file by connecting it to the machine and executing **./services.sh control** from the main script and selecting option **9) Add a device**.
 
 ## wdaSync.sh
 
