@@ -19,12 +19,16 @@ This is by no means an exhaustive list and there might be more limitations prese
 1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section of the main script.
 2. The main starting point of the script is the **control** argument which presents a selection of all available options.
 
-## Install project usage dependencies - currently Docker and unzip
+## Install project usage dependencies - currently Docker, unzip and jq
 
 1. Execute **./services.sh control** and select option **5) Setup dependencies**
-2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
+2. Agree on each question, the setup will:
+ * Install **Docker** and allow for Docker commands without *sudo*
+ * Install **unzip** util for setup of the DeveloperDiskImages
+ * Install **jq** util for parsing and updating data in the **configs/config.json** file
+ * Create **logs/** and **ipa/** folders in the main project folder.
 
-**IMPORTANT** If you don't use this to setup dependencies you need to create **logs/** and **ipa/** folders in the main project folder yourself.
+**IMPORTANT** If you don't use this to setup dependencies you need to install all of them yourself and you need to create **logs/** and **ipa/** folders in the main project folder.
 
 ## Prepare WebDriverAgent.ipa file
 

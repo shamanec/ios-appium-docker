@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #==========================CONTROL FUNCTIONS==========================#
-#===================================================================#
+#=====================================================================#
 control-function() {
   echo "Please select one of the options below: "
   control_options
@@ -380,6 +380,16 @@ install_dependencies() {
     No) exit ;;
     esac
   done
+  echo "You are about to install jq util, do you wish to continue? Yes/No"
+  select yn in "Yes" "No"; do
+    case $yn in
+    Yes)
+      sudo apt-get update -y && sudo apt-get install -y jq
+      exit
+      ;;
+    No) exit ;;
+    esac
+  done
   mkdir logs
   mkdir ipa
 }
@@ -419,7 +429,7 @@ backup() {
     mkdir backup/configs
   fi
   echo "Please select which project files to backup: "
-  options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/env.txt" "configs/config.json")
+  options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/config.json")
   select opt in "${options[@]}"; do
     case $opt in
     "All files")
@@ -439,9 +449,6 @@ backup() {
     "configs/nodeconfiggen.sh")
       cp configs/nodeconfiggen.sh backup/configs/nodeconfiggen.sh
       ;;
-    "configs/env.txt")
-      cp configs/env.txt backup/configs/env.txt
-      ;;
     "configs/config.json")
       cp configs/config.json backup/configs/config.json
       ;;
@@ -456,7 +463,7 @@ backup() {
 
 restore() {
   echo "Please select which project files to restore: "
-  options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/config.json")
+  options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/config.json")
   select opt in "${options[@]}"; do
     case $opt in
     "All files")
@@ -485,10 +492,6 @@ restore() {
     "backup/configs/nodeconfiggen.sh")
       check_file_existence "backup/configs/nodeconfiggen.sh"
       restore_file "$opt" configs/nodeconfiggen.sh
-      ;;
-    "backup/configs/env.txt")
-      check_file_existence "backup/configs/env.txt"
-      restore_file "$opt" configs/env.txt
       ;;
     "backup/configs/config.json")
       check_file_existence "backup/configs/config.json"
