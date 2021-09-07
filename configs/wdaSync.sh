@@ -3,7 +3,7 @@
 #Start the WebDriverAgent on specific WDA and MJPEG ports
 start-wda-go-ios() {
  echo "[$(date +'%d/%m/%Y %H:%M:%S')] Starting WebDriverAgent application on port $WDA_PORT"
- ./go-ios/ios runwda --bundleid=$WDA_BUNDLEID --testrunnerbundleid=$WDA_BUNDLEID --xctestconfig=WebDriverAgentRunner.xctest --env USE_PORT=$WDA_PORT --env MJPEG_PORT=$MJPEG_PORT --udid $DEVICE_UDID > "/opt/logs/wdaLogs.txt" 2>&1 &
+ ./go-ios/ios runwda --bundleid=$WDA_BUNDLEID --testrunnerbundleid=$WDA_BUNDLEID --xctestconfig=WebDriverAgentRunner.xctest --env USE_PORT=$WDA_PORT --env MJPEG_SERVER_PORT=$MJPEG_PORT --udid $DEVICE_UDID > "/opt/logs/wdaLogs.txt" 2>&1 &
  sleep 2
 }
 
