@@ -19,12 +19,16 @@ This is by no means an exhaustive list and there might be more limitations prese
 1. Execute **./services.sh -h** or **./services.sh** without arguments to see the help section of the main script.
 2. The main starting point of the script is the **control** argument which presents a selection of all available options.
 
-## Install project usage dependencies - currently Docker and unzip
+## Install project usage dependencies - currently Docker, unzip and jq
 
 1. Execute **./services.sh control** and select option **5) Setup dependencies**
-2. Agree on each question - this will install Docker, allow for Docker commands without *sudo* and install unzip for the DeveloperDiskImages - tested on Ubuntu 18.04.5 LTS
+2. Agree on each question, the setup will:
+ * Install **Docker** and allow for Docker commands without *sudo*
+ * Install **unzip** util for setup of the DeveloperDiskImages
+ * Install **jq** util for parsing and updating data in the **configs/config.json** file
+ * Create **logs/** and **ipa/** folders in the main project folder.
 
-**IMPORTANT** If you don't use this to setup dependencies you need to create **logs/** and **ipa/** folders in the main project folder yourself.
+**IMPORTANT** If you don't use this to setup dependencies you need to install all of them yourself and you need to create **logs/** and **ipa/** folders in the main project folder.
 
 ## Prepare WebDriverAgent.ipa file
 
@@ -43,36 +47,45 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
 
-## Set up the project environment vars
+## Set up the project environment vars in the configuration file
 1. Execute **./service.sh control** and select option **4) Setup environment vars**
 2. Provide the requested data - Selenium Hub Host, Selenium Hub port, devices host IP address and hub protocol(if connecting to Selenium Grid) and WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
 ### or alternatively
 
-1. Open *configs/env.txt* file.
-2. Change the values for each of the 5 variables:  
-*SELENIUM_HUB_HOST*  
-*SELENIUM_HUB_PORT*  
-*DEVICES_HOST_IP*  
-*HUB_PROTOCOL*  
-*WDA_BUNDLE_ID*  
+1. Open the **configs/config.json** file.
+2. Change the values for each of the 5 keys in the json:  
+*selenium_hub_host*  
+*selenium_hub_port*  
+*devices_host*  
+*selenium_hub_protocol_type*  
+*wda_bundle_id*  
 
-For more information on the variables you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#envtxt)
+**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
-## Prepare devices file
+## Add devices to the configuration file
 1. Execute **./ios list**
 2. Get the UDIDs of all currently connected devices.
-3. Open(create) the **configs/devices.txt** file.
-4. Add each device using the same format, each on separate line:
-**Device name | Device OS version | Device UDID | Appium port | WDA port | WDA Mjpeg port**  
-iPhone_7|13.4|00008030001E19DC3CE9802E|4841|20001|20002
-5. Use unique ports for Appium, WDA port and Mjpeg port for each device.
+3. Open the **configs/config.json** file.
+4. Add each device to the 'devicesList' array as a new object keeping the convention of the key-value pairs, order is irrelevant:
+{
+ "appium_port" : 4842,
+ "device_name" : "iPhone_11",
+ "device_os_version" : "13.5.1",
+ "device_udid" : "00008030000418C136FB8022",
+ "wda_mjpeg_port" : 20102,
+ "wda_port" : 20002
+}
+5. Use unique ports for *appium_port*, *wda_port* and *wda_mjpeg_port* for each device.
 
 ### or alternatively add device to the file using the script from list of connected devices
 1. Execute **./services.sh control** and select option **9) Add a device**
 2. Type device name
 3. Select device from list of connected devices.
-4. It will be automatically added to the list in *devices.txt*
+4. It will be automatically added to the 'devicesList' array in the **config.json** file.
+
+**Note** Via the script you can only add devices that are connected to the machine.  
+**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
 ## Create the docker image
 

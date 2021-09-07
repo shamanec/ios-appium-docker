@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #==========================CONTROL FUNCTIONS==========================#
-#===================================================================#
+#=====================================================================#
 control-function() {
   echo "Please select one of the options below: "
   control_options
   while true
   do
     echo "//====================================//"
-    echo "Would you like to select another option?"
+    echo "Would you like to select another control option?"
     select yn in "Yes" "No"; do
       case $yn in
       Yes)
@@ -33,11 +33,11 @@ control_options() {
       break
       ;;
     "Start listener - No Grid")
-      ./listener_script.sh no-grid
+      ./listener_script.sh no_grid
       break
       ;;
     "Stop listener")
-      stop_service
+      stop_listener
       ;;
     "Setup environment vars")
       setup_environment_vars
@@ -71,7 +71,7 @@ control_options() {
       backup
       break
       ;;
-    "Restore project files")=
+    "Restore project files")
       restore
       break
       ;;
@@ -83,110 +83,10 @@ control_options() {
   done
 }
 
-#=====================SERVICE AND CONTAINER FUNCTIONS=======================#
+#=====================CONTAINER FUNCTIONS=======================#
 #===========================================================================#
 
-start_container() {
-  on_grid=$1
-  echo "================================================================"
-  #Generate logs dir name for the specific device
-  LOGSDIR="logs/container_$deviceName-$udid"
-  #Create the logs dir if not already present
-  if [ ! -d "$LOGSDIR" ]; then
-    now="$(date +'%d/%m/%Y %H:%M:%S')"
-    echo "[$now] Creating logs folder for the device in logs/container_$deviceName-$udid"
-    mkdir "logs/container_$deviceName-$udid"
-  fi
-  echo "[$now] Starting container for device $deviceName with UDID: $udid."
-  #Get the WDA bundle id from the env.txt file to provide to the container
-  wda_bundle_id=$(cat configs/env.txt | grep "WDA_BUNDLE_ID" | cut -d '=' -f 2)
-  if [ "$on_grid" == "no-grid" ]; then
-    #Build custom part of the docker run command when not connecting to Selenium Grid
-    hub_lines="	-e ON_GRID=false"
-  else
-    #Get the Selenium Grid arguments from the env.txt file to provide to the container
-    hub_host=$(cat configs/env.txt | grep "SELENIUM_HUB_HOST" | cut -d '=' -f 2)
-    hub_port=$(cat configs/env.txt | grep "SELENIUM_HUB_PORT" | cut -d '=' -f 2)
-    devices_host=$(cat configs/env.txt | grep "DEVICES_HOST_IP" | cut -d '=' -f 2)
-    hub_protocol=$(cat configs/env.txt | grep "HUB_PROTOCOL" | cut -d '=' -f 2)
-    #Build custom part of the docker run command when connecting to Selenium Grid
-    hub_lines="	-e SELENIUM_HUB_HOST=$hub_host \
-	-e SELENIUM_HUB_PORT=$hub_port \
-	-e ON_GRID=true \
-	-e DEVICES_HOST=$devices_host \
-	-e HUB_PROTOCOL=$hub_protocol \
-	-p $hub_port:$hub_port"
-  fi
-  docker run --name "ios_device_$deviceName-$udid" \
-    -p "$appium_port":"$appium_port" \
-    -p "$wda_port":"$wda_port" \
-    -p "$mjpeg_port":"$mjpeg_port" \
-    -e DEVICE_UDID="$udid" \
-    -e WDA_PORT="$wda_port" \
-    -e MJPEG_PORT="$mjpeg_port" \
-    -e APPIUM_PORT="$appium_port" \
-    -e DEVICE_OS_VERSION="$osVersion" \
-    -e DEVICE_NAME="$deviceName" \
-    $hub_lines \
-    -e WDA_BUNDLEID="$wda_bundle_id" \
-    -v /var/run/usbmuxd:/var/run/usbmuxd \
-    -v /var/lib/lockdown:/var/lib/lockdown \
-    -v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
-    -v "$(pwd)"/ipa:/opt/ipa \
-    -v "$(pwd)/logs/container_$deviceName-$udid":/opt/logs \
-    ios-appium >>"logs/container_$deviceName-$udid/containerLogs.txt" 2>&1 &
-}
-
-start_service() {
-  on_grid=$1
-  devices=configs/devices.txt
-  while true; do
-    #Read the device.txt file line by line
-    while IFS= read -r line; do
-      #Parse the respective device values for the current line from devices.txt file
-      udid=$(echo "$line" | cut -d '|' -f 3 | xargs)
-      deviceName=$(echo "$line" | cut -d '|' -f 1 | xargs)
-      osVersion=$(echo "$line" | cut -d '|' -f 2 | xargs)
-      appium_port=$(echo "$line" | cut -d '|' -f 4 | xargs)
-      wda_port=$(echo "$line" | cut -d '|' -f 5 | xargs)
-      mjpeg_port=$(echo "$line" | cut -d '|' -f 6 | xargs)
-      #Check if the currently targeted device is connected to the machine
-      output=$(./ios list | grep "$udid")
-      #If the device is not connected to the machine
-      if [ -z "$output" ]; then
-        echo "================================================================"
-        now="$(date +'%d/%m/%Y %H:%M:%S')"
-        echo "[$now] Device with Name: $deviceName, OS Version: $osVersion and UDID: $udid is not connected to the machine."
-        #Check if a container still exists for the not connected device - if there is one, remove it
-        containerOutput=$(docker ps -a | grep "$udid")
-        if [ -z "$containerOutput" ]; then
-          echo "[$now] No leftover container for this device to kill"
-        else
-          echo "[$now] Killing leftover container for disconnected device with Name: $deviceName and UDID: $udid"
-          containerID=$(docker ps -aqf "name=^ios_device_")
-          docker stop "$containerID"
-          docker rm "$containerID"
-        fi
-      #If the device is connected to the machine
-      else
-        #Check if a container already exists for this device
-        containerOutput=$(docker ps -a | grep "$udid")
-        #If container doesn't exist - create one
-        if [ -z "$containerOutput" ]; then
-          start_container "$on_grid"
-        #If container already exists - do nothing
-        else
-          now="$(date +'%d/%m/%Y %H:%M:%S')"
-          echo "[$now] ================================================================"
-          echo "[$now] There is a container already running for device $deviceName with UDID: $udid. Nothing to do."
-        fi
-      fi
-      sleep 10
-    done <"$devices"
-  done
-}
-
-stop_service() {
+stop_listener() {
   #Get the process ID of the running listener script
   processID=$(ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}')
   #If there is no running listener process do nothing
@@ -225,6 +125,7 @@ stop_service() {
   fi
 }
 
+#Kill the service by the PID provided as argument 1 when calling it in the above function
 kill_service() {
   kill -9 "$1"
   echo "Listening service stopped".
@@ -243,24 +144,18 @@ destroy_containers() {
 #============================================================================#
 
 add_device() {
-  #If there is no devices.txt file then execute the script for adding first device
-  if ! [ -s configs/devices.txt ]; then
-    add_first_device
-  #If there is a devices.txt file already created execute the script for adding additional devices
-  else
-    add_additional_device
-  fi
+  add_device_to_config
   while true
     do
       echo "Would you like to add another device?"
       select yn in "Yes" "No"; do
         case $yn in
         Yes)
-          add_additional_device
+          add_device_to_config
           break
           ;;
         No)
-          break
+          return
           ;;
         esac
       done
@@ -286,51 +181,23 @@ device_selection_list() {
   done
 }
 
-#Method for adding the first device to devices.txt
-add_first_device() {
+#Method for adding devices to config.json
+add_device_to_config() {
   device_name=""
   device_udid=""
   os_version=""
 
-  #Read non-hardcoded values from user input
-  #Input and read device name
-  read -p "Enter your device name: " -r device_name
-  #If there is no input or the input contains spaces, reject it and ask again
-  while :; do
-    if [[ -z "$device_name" ]]; then
-      read -p "Invalid input, device name cannot contain spaces and cannot be empty. Enter your device name again: " -r device_name
-    else
-      case ${device_name} in
-      *\ *) read -p "Invalid input, device name cannot contain spaces and cannot be empty. Enter your device name again: " -r device_name ;;
-      *) break ;;
-      esac
-    fi
-  done
-
-  #List all connected real devices with selection - currently only UDID and OS version
-  device_selection_list
-
-  #Write the device to the devices.txt file
-  echo "$device_name | $os_version | $device_udid | 4841 | 20001 | 20101 " >>configs/devices.txt
-}
-
-#Method for adding additional devices to devices.txt
-add_additional_device() {
-  device_name=""
-  device_udid=""
-  os_version=""
-
-  #Get the number of lines in the devices file if not empty
-  numberOfLines=$(wc -l <configs/devices.txt)
+  #Get the number of registered devices in the config.json file
+  number_of_devices=$(cat configs/config.json | jq -r '.devicesList| length')
 
   #Increment appium port based on number of lines (devices)
-  appium_port="$((4840 + $numberOfLines + 1))"
+  appium_port="$((4840 + $number_of_devices + 1))"
 
   #Increment wda port based on number of lines (devices)
-  wda_port="$((20000 + $numberOfLines + 1))"
+  wda_port="$((20000 + $number_of_devices + 1))"
 
   #Increment mjpeg port based on number of lines (devices)
-  mjpeg_port="$((20100 + $numberOfLines + 1))"
+  mjpeg_port="$((20100 + $number_of_devices + 1))"
 
   #Read non-hardcoded values from user input
   #Input and read device name
@@ -349,14 +216,15 @@ add_additional_device() {
   #Input and read device UDID
   device_selection_list
 
-  #Check if device is already in the devices.txt file list
-  devicePresentCheck=$(cat configs/devices.txt | grep ${device_udid})
+  #Check if device is already in the config.json file list
+  devicePresentCheck=$(cat configs/config.json | jq '.devicesList[].device_udid' | grep ${device_udid})
   if [ -z "$devicePresentCheck" ]; then
-    #Write to the devices file the first device
-    echo "$device_name | $os_version | $device_udid | $appium_port | $wda_port | $mjpeg_port " >>configs/devices.txt
+    #Rewrite the initial json into a new json by injecting the additional device in the 'devicesList' array and store it into variable
+    new_json=$(cat < configs/config.json | jq '.' | jq ".devicesList += [{\"device_name\": \"$device_name\", \"device_udid\": \"$device_udid\", \"device_os_version\": \"$os_version\", \"appium_port\": $appium_port, \"wda_port\": $wda_port, \"wda_mjpeg_port\": $mjpeg_port}]" 2>&1)
+    #Make the new json prettier and echo it in the config.json file completely rewriting it
+    echo $new_json | json_pp -json_opt pretty,canonical > configs/config.json
   else
-    echo "The selected device is already added in devices.txt:"
-    echo "Line $(cat configs/devices.txt | grep -n ${device_udid})"
+    echo "The selected device is already registered in the config.json file:"
     echo "================================================================================="
     device_selection_list
   fi
@@ -397,7 +265,7 @@ add_hub_host() {
       esac
     fi
   done
-  sed -i "s/SELENIUM_HUB_HOST=.*/SELENIUM_HUB_HOST=$hub_host/g" configs/env.txt
+  update_config_json_value selenium_hub_host $hub_host
 }
 
 add_hub_port() {
@@ -412,7 +280,7 @@ add_hub_port() {
       esac
     fi
   done
-  sed -i "s/SELENIUM_HUB_PORT=.*/SELENIUM_HUB_PORT=$hub_port/g" configs/env.txt
+  update_config_json_value selenium_hub_port $hub_port
 }
 
 add_devices_host() {
@@ -427,13 +295,13 @@ add_devices_host() {
       esac
     fi
   done
-  sed -i "s/DEVICES_HOST_IP=.*/DEVICES_HOST_IP=$devices_host/g" configs/env.txt
+  update_config_json_value devices_host $devices_host
 }
 
 add_hub_protocol() {
   echo "Please select the hub protocol: http/https"
   select protocol in "http" "https"; do
-    sed -i "s/HUB_PROTOCOL=.*/HUB_PROTOCOL=$protocol/g" configs/env.txt
+    update_config_json_value selenium_hub_protocol_type $protocol
     break
   done
 }
@@ -452,7 +320,13 @@ add_wda_bundleID() {
       esac
     fi
   done
-  sed -i "s/WDA_BUNDLE_ID=.*/WDA_BUNDLE_ID=$bundle_id/g" configs/env.txt
+  update_config_json_value wda_bundle_id $bundle_id
+}
+
+#This function updates key provided with argument 1 to value provided with argument 2 in the config.json
+update_config_json_value() {
+  config_json=$(cat < configs/config.json)
+  echo $config_json | jq ".$1 = \"$2\"" | json_pp -json_opt pretty,canonical > configs/config.json
 }
 
 setup_developer_disk_images() {
@@ -506,6 +380,16 @@ install_dependencies() {
     No) exit ;;
     esac
   done
+  echo "You are about to install jq util, do you wish to continue? Yes/No"
+  select yn in "Yes" "No"; do
+    case $yn in
+    Yes)
+      sudo apt-get update -y && sudo apt-get install -y jq
+      exit
+      ;;
+    No) exit ;;
+    esac
+  done
   mkdir logs
   mkdir ipa
 }
@@ -545,7 +429,7 @@ backup() {
     mkdir backup/configs
   fi
   echo "Please select which project files to backup: "
-  options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/env.txt" "configs/devices.txt")
+  options=("All files" "services.sh" "Dockerfile" "configs/wdaSync.sh" "configs/nodeconfiggen.sh" "configs/config.json")
   select opt in "${options[@]}"; do
     case $opt in
     "All files")
@@ -565,11 +449,8 @@ backup() {
     "configs/nodeconfiggen.sh")
       cp configs/nodeconfiggen.sh backup/configs/nodeconfiggen.sh
       ;;
-    "configs/env.txt")
-      cp configs/env.txt backup/configs/env.txt
-      ;;
-    "configs/devices.txt")
-      cp configs/devices.txt backup/configs/devices.txt
+    "configs/config.json")
+      cp configs/config.json backup/configs/config.json
       ;;
     *) echo "Invalid option selected. Please try again.." ;;
     esac
@@ -582,7 +463,7 @@ backup() {
 
 restore() {
   echo "Please select which project files to restore: "
-  options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/env.txt" "backup/configs/devices.txt")
+  options=("All files" "backup/services.sh" "backup/Dockerfile" "backup/configs/wdaSync.sh" "backup/configs/nodeconfiggen.sh" "backup/configs/config.json")
   select opt in "${options[@]}"; do
     case $opt in
     "All files")
@@ -612,13 +493,9 @@ restore() {
       check_file_existence "backup/configs/nodeconfiggen.sh"
       restore_file "$opt" configs/nodeconfiggen.sh
       ;;
-    "backup/configs/env.txt")
-      check_file_existence "backup/configs/env.txt"
-      restore_file "$opt" configs/env.txt
-      ;;
-    "backup/configs/devices.txt")
-      check_file_existence "backup/configs/devices.txt"
-      restore_file "$opt" configs/devices.txt
+    "backup/configs/config.json")
+      check_file_existence "backup/configs/config.json"
+      restore_file "$opt" configs/config.json
       ;;
     *) echo "Invalid option selected. Please try again.." ;;
     esac
@@ -661,7 +538,7 @@ echo_help() {
 	  6) Setup developer disk images	Clones the developer disk images for iOS 13&14 and unzips them to mount to containers
 	  7) Build Docker image			Creates a Docker image called 'ios-appium' based on the Dockerfile by default
 	  8) Remove Docker image		Removes the 'ios-appium' Docker image from the local repo
-	  9) Add a device			Allows to add a device to devices.txt file automatically from connected devices
+	  9) Add a device			Allows to add a device to config.json file automatically from connected devices
 	  10) Destroy containers		Stops and removes all iOS device containers
 	  11) Backup project files		Backup all or particular project files before working on them
 	  12) Restore project files		Restore files from backup
@@ -673,6 +550,9 @@ echo_help() {
 case "$1" in
 control)
   control-function
+  ;;
+start)
+  start_service >> tests.txt
   ;;
 -h)
   echo_help

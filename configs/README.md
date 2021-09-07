@@ -1,23 +1,24 @@
-## env.txt
+## config.json
 
- * This file contains the SELENIUM_HUB_HOST, SELENIUM_HUB_PORT, DEVICES_HOST_IP, HUB_PROTOCOL and WDA_BUNDLE_ID variables.
- * SELENIUM_HUB_HOST, SELENIUM_HUB_PORT and DEVICES_HOST_IP can be left as is or empty if you are not going to connect to Selenium Grid.
- * SELENIUM_HUB_HOST should be the IP address of the Selenium Grid if you are connecting to one.
- * SELENIUM_HUB_PORT should be the port of the Selenium Grid if you are connecting to one.
- * HUB_PROTOCOL should be 'http' or 'https' if you are connecting to Selenium Grid depending on your setup.
- * DEVICES_HOST_IP should be the IP address of the current machine that will provide the devices if you are connecting to Selenium Grid.
- * **Important** The Selenium Grid setup was tested on a local network so you might need adjustments in **env.txt**, **nodeconfiggen.sh** script and the *start-container* function in the **services.sh** script depending on your current setup.
- * WDA_BUNDLE_ID can be left as is (cannot guarantee on 100% you will be able to use mine) or provide the bundle ID of the WDA you built yourself.  
- **NOTE** You can update those values through the main script by executing **./services.sh control** and selecting option **4) Setup environment vars**.
+Initially there were two separate *.txt files for devices info and environment variables where the data was provided line by line. Switching to json data made the scripts a bit more complex but it allowed me to combine the devices info and environment variables into a single file and in my opinion it looks cooler and neater this way. The **config.json** consists of a single object that contains the key-value pairs for the environment variables and a single array named 'devicesList' which contains the vars for each device. Everything in the file is pretty much self-explanatory but I'll add provide some info regardless:
 
-## devices.txt
+1. Environment
+ * *selenium_hub_host*, *selenium_hub_port*, *selenium_hub_protocol_type* and *devices_host* can be left as is if you are not going to connect to Selenium Grid.
+ * *selenium_hub_host* should be the IP address of the Selenium Grid if you are connecting to one.
+ * *selenium_hub_port* should be the port of the Selenium Grid if you are connecting to one.
+ * *selenium_hub_protocol_type* should be 'http' or 'https' if you are connecting to Selenium Grid depending on your setup.
+ * *devices_host* should be the IP address of the current machine that will provide the devices if you are connecting to Selenium Grid.
+ * *wda_bundle_id* should be the bundle ID of the WebDriverAgent.ipa that you built or can be left as is if you are trying to use mine.
 
- * In this file you need to provide a list of the devices that you want the listener to check for and create/destroy containers.
- * Each device needs to be added on its own separate line in the file.
- * Each device needs to be added in the following format:  
-   **Device name | Device OS version | Device UDID | Appium port | WDA port | WDA Mjpeg port**  
-   You can follow the convention of the provided file for the port numbers.
- * Additionally you can add a new device to the file by connecting it to the machine and executing **./services.sh control** from the main script and selecting option **9) Add a device**.
+2. Devices
+ * *appium_port* is of type number and should be the port on which you want the particular device to register Appium server.
+ * *device_name* is of type string and can be anything but I would avoid using spaces and special characters if possible. You can stick to the examples like 'iPhone_11'
+ * *device_os_version* is of type string and should be the respective device OS version.
+ * *device_udid* is of type string and should be the respective device UDID. You can get them by executing **./ios list --details** in the main project folder.
+ * *wda_mjpeg_port* is of type number and should be the port on which you want to get a stream off WDA - I am not actually using it but could be useful for someone.
+ * *wda_port* is of type number and should be the port on which you want the WDA to listen on - it is used by the Appium server to connect to the specific *webDriverAgentUrl* since we are not doing the building WDA dynamically as on OSX systems.
+
+All looks straightforward and you should not have issues with updating the file but for ease of use you can do it via the main script. You can update the environment vars by executing **./services.sh control** and selecting option **4) Setup environment vars**. You can add more devices (that are connected to the machine) by executing **./services.sh control** and selecting option **9) Add a device**.
 
 ## wdaSync.sh
 
