@@ -25,7 +25,7 @@ control-function() {
 }
 
 control_options() {
-  control_options=("Start listener - Grid" "Start listener - No Grid" "Stop listener" "Setup environment vars" "Setup dependencies" "Setup developer disk images" "Build Docker image" "Remove Docker image" "Add a device" "Destroy containers" "Backup project files" "Restore project files" "Help")
+  control_options=("Start listener - Grid" "Start listener - No Grid" "Stop listener" "Setup environment vars" "Setup dependencies" "Setup developer disk images" "Build Docker image" "Remove Docker image" "Add a device" "Destroy containers" "Backup project files" "Restore project files" "Setup udev listener" "Remove udev listener" "Help")
   select option in "${control_options[@]}"; do
     case $option in
     "Start listener - Grid")
@@ -75,6 +75,14 @@ control_options() {
       restore
       break
       ;;
+    "Setup udev listener")
+      setup_udev
+      break
+      ;;
+    "Remove udev listener")
+      remove_udev
+      break
+      ;;
     "Help")
       echo_help
       break
@@ -82,6 +90,80 @@ control_options() {
     esac
   done
 }
+
+#=====================UDEV LISTENER FUNCTIONS===================#
+#===============================================================#
+#The reason there are 2 separate rules is that I couldn't manage to get usbmuxd successfully running along with the device events
+#Maybe I am doing something wrong but if I tried to trigger usbmuxd and the device via the same service file usbmuxd just wouldn't start properly and the device was not accessible to the container
+#It might not be a problem if usbmuxd is already running, but it is when connecting first device
+
+#This function creates 90-usbmuxd.rules file that will start containers in case registered device is connected to the machine
+create_devices_rules() {
+  config_json=$(cat configs/config.json)
+  if [[ -f 90-usbmuxd.rules ]]; then
+    rm 90-usbmuxd.rules
+  fi
+  touch 90-usbmuxd.rules
+  #Read all the device udids from the config file into an array
+  read -r -d '' -a devices_udids < <( echo "$config_json" | jq -r ".devicesList[].device_udid" 2>&1)
+  #Create separate line in the service rules for each device added in config.json
+  for device_udid in "${devices_udids[@]}"
+  do
+    #We identify the device by serial and manufacturer because they are available when you connect a device
+    #This allows us to run the ios_device2docker container creation only if the specific device is added to the machine
+    echo "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"$device_udid\", OWNER=\"$(whoami)\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker $device_udid\"" >> 90-usbmuxd.rules
+  done
+  #We execute the ios_device2docker container removal everytime an iOS device is removed from the machine
+  #The reason we do it everytime is that the attributes like 'serial' are not available upon disconnecting a device
+  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", ACTION==\"remove\", RUN+=\"/usr/local/bin/ios_device2docker\"" >> 90-usbmuxd.rules
+}
+
+#This function create 39-usbmuxd.rules file that will start usbmuxd if an iOS device is added to the machine
+create_usbmuxd_rule() {
+  if [[ -f 39-usbmuxd.rules ]]; then
+    rm 39-usbmuxd.rules
+  fi
+  touch 39-usbmuxd.rules
+  #We create a service file that starts (or attempts to start) usbmuxd in udev mode everytime an iOS device is connected to the machine
+  #This is mostly important upon connecting the first device, for next devices usbmuxd is already running but I couldn't make it work in other way
+  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"$(whoami)\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -u -v -z\"" >> 39-usbmuxd.rules
+}
+
+
+#This function reads the configs/default_ios_device2docker file and creates a new one with the current project dir
+generate_ios_device2docker() {
+  local project_dir=$(pwd)
+  sed -e "s|project_dir|$project_dir|g" configs/default_ios_device2docker > ios_device2docker
+}
+
+#This function copies the usbmuxd and devices rules to /etc/udev/rules.d and reloads the udev rules
+copy_and_reload_udev_rules() {
+  sudo cp 90-usbmuxd.rules /etc/udev/rules.d/
+  sudo cp 39-usbmuxd.rules /etc/udev/rules.d/
+  sudo udevadm control --reload-rules
+  rm 90-usbmuxd.rules
+  rm 39-usbmuxd.rules
+}
+
+#This function completely sets up the udev listener
+setup_udev() {
+  create_devices_rules
+  create_usbmuxd_rule
+  copy_and_reload_udev_rules
+  generate_ios_device2docker
+  sudo cp ios_device2docker /usr/local/bin/ && chmod 755 /usr/local/bin/ios_device2docker
+  rm ios_device2docker
+}
+
+#This function completely removes the udev listener
+remove_udev() {
+  sudo rm /etc/udev/rules.d/90-usbmuxd.rules
+  sudo rm /etc/udev/rules.d/39-usbmuxd.rules
+  sudo udevadm control --reload-rules
+  sudo rm /usr/local/bin/ios_device2docker
+}
+
+#===============================================================#
 
 #=====================CONTAINER FUNCTIONS=======================#
 #===========================================================================#
@@ -338,17 +420,16 @@ setup_developer_disk_images() {
   rm *.zip
 }
 
-#Build Docker image
+#Build Docker image with default name
 docker_build() {
     docker build -t ios-appium .
 }
 
-#Delete Docker image from local repo
+#Delete Docker image with default name from local repo
 remove_docker_image() {
     docker rmi "$(docker images -q ios-appium)"
 }
 
-#Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
 install_dependencies() {
   echo "You are about to install Docker, do you wish to continue? Yes/No"
   select yn in "Yes" "No"; do
@@ -370,33 +451,22 @@ install_dependencies() {
     No) break ;;
     esac
   done
-  echo "You are about to install unzip util, do you wish to continue? Yes/No"
-  select yn in "Yes" "No"; do
-    case $yn in
-    Yes)
-      sudo apt-get update -y && sudo apt-get install -y unzip
-      exit
-      ;;
-    No) exit ;;
-    esac
-  done
-  echo "You are about to install jq util, do you wish to continue? Yes/No"
-  select yn in "Yes" "No"; do
-    case $yn in
-    Yes)
-      sudo apt-get update -y && sudo apt-get install -y jq
-      exit
-      ;;
-    No) exit ;;
-    esac
-  done
+
+  echo "Installing unzip util..."
+  sudo apt-get update -y && sudo apt-get install -y unzip
+ 
+  echo "Installing jq util..."
+  sudo apt-get update -y && sudo apt-get install -y jq
+
+  echo "Installing usbmuxd..."
+  sudo apt-get install -y usbmuxd
+
   mkdir logs
   mkdir ipa
 }
 
-#INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
+#tested on Ubuntu 18.04.5 LTS
 install_docker() {
-  #Update your existing list of packages
   sudo apt update
   #Install prerequisites
   sudo apt install apt-transport-https ca-certificates curl software-properties-common
@@ -406,18 +476,13 @@ install_docker() {
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
   #Update the packages with the new repo
   sudo apt update
-  #Make sure you install from Docker repo
   apt-cache policy docker-ce
-  #Finally install Docker
   sudo apt install docker-ce
 }
 
-#EXECUTING DOCKER COMMANDS WITHOUT SUDO
 execute_docker_no_sudo() {
   #Add your username to docker group
   sudo usermod -aG docker "${USER}"
-  #Confirm the user is added with:
-  id -nG
 }
 
 #=======================BACKUP AND RESTORE=========================#
