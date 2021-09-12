@@ -153,6 +153,7 @@ setup_udev() {
   copy_and_reload_udev_rules
   generate_ios_device2docker
   sudo cp ios_device2docker /usr/local/bin/ && chmod 755 /usr/local/bin/ios_device2docker
+  rm ios_device2docker
 }
 
 #This function completely removes the udev listener
@@ -430,7 +431,6 @@ remove_docker_image() {
     docker rmi "$(docker images -q ios-appium)"
 }
 
-#Install Docker and allow for commands without sudo - tested on Ubuntu 18.04.5 LTS
 install_dependencies() {
   echo "You are about to install Docker, do you wish to continue? Yes/No"
   select yn in "Yes" "No"; do
@@ -452,26 +452,16 @@ install_dependencies() {
     No) break ;;
     esac
   done
-  echo "You are about to install unzip util, do you wish to continue? Yes/No"
-  select yn in "Yes" "No"; do
-    case $yn in
-    Yes)
-      sudo apt-get update -y && sudo apt-get install -y unzip
-      exit
-      ;;
-    No) exit ;;
-    esac
-  done
-  echo "You are about to install jq util, do you wish to continue? Yes/No"
-  select yn in "Yes" "No"; do
-    case $yn in
-    Yes)
-      sudo apt-get update -y && sudo apt-get install -y jq
-      exit
-      ;;
-    No) exit ;;
-    esac
-  done
+
+  echo "Installing unzip util..."
+  sudo apt-get update -y && sudo apt-get install -y unzip
+ 
+  echo "Installing jq util..."
+  sudo apt-get update -y && sudo apt-get install -y jq
+
+  echo "Installing usbmuxd..."
+  sudo apt-get install -y usbmuxd
+
   mkdir logs
   mkdir ipa
 }
