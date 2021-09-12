@@ -3,9 +3,9 @@
 <img src="https://iili.io/R8cGNj.png" width="50%" height="50%">
 
  * This is a solution for running Appium tests on real iOS devices on Linux with as easier setup and manual maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
- * You can easily add devices to the project, then start one of the two listeners which check if the devices in the list are connected to the machine and creates/destroys containers automagically.  
+ * You can register devices to the project, then start one of the two listeners which check if the devices in the config are connected to the machine and creates/destroys containers automagically.  
  * As you know WebDriverAgent is famous in being unstable, especially in longer test runs so the scripts also check the WebDriverAgent service and restart it if needed allowing for the tests to proceed in case it crashes.  
- * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases except for the **5) Setup dependencies** control option from the script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
+ * The project was built and tested on Ubuntu 18.04.5 LTS but I suppose all should work as expected on different releases or Linux distros except for the **5) Setup dependencies** control option from the script. Unfortunately I have only one iOS device and can't thoroughly test the container creation/destruction but in theory it should be fine.    
  * You still cannot avoid having at least one(any) Mac machine to build the WebDriverAgent.ipa file.  
  * If you follow this guide step by step you should have no issues running Appium tests on Linux without Xcode in no time.
 
@@ -52,7 +52,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 ## Set up the project environment vars in the configuration file (Recommended)
 1. Execute **./service.sh control** and select option **4) Setup environment vars**
-2. Provide the requested data
+2. Provide the requested data:
  * Selenium Hub Host(if connecting to Selenium Grid)
  * Selenium Hub port(if connecting to Selenium Grid)
  * devices host IP address(if connecting to Selenium Grid)
@@ -71,7 +71,17 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
-## Add devices to the configuration file
+## Add devices to the configuration file from list of connected devices using the script  (Recommended)
+
+1. Execute **./services.sh control** and select option **9) Add a device**
+2. Type device name
+3. Select device from list of connected devices.
+4. It will be automatically added to the 'devicesList' array in the **config.json** file.
+
+**Note** Via the script you can only add devices that are connected to the machine.  
+**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
+
+### or alternatively add devices manually to the configuration file
 1. Execute **./ios list**
 2. Get the UDIDs of all currently connected devices.
 3. Open the **configs/config.json** file.
@@ -85,15 +95,6 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  "wda_port" : 20002
 }
 5. Use unique ports for *appium_port*, *wda_port* and *wda_mjpeg_port* for each device.
-
-### or alternatively add device to the file using the script from list of connected devices (Recommended)
-1. Execute **./services.sh control** and select option **9) Add a device**
-2. Type device name
-3. Select device from list of connected devices.
-4. It will be automatically added to the 'devicesList' array in the **config.json** file.
-
-**Note** Via the script you can only add devices that are connected to the machine.  
-**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
 ## Create the docker image
 
