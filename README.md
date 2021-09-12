@@ -1,6 +1,6 @@
 ## Introduction
 
-<img src="https://iili.io/R8cGNj.png" width="100%" height="100%">
+<img src="https://iili.io/R8cGNj.png" width="60%" height="60%">
 
  * This is a solution for running Appium tests on real iOS devices on Linux with as little setup and manual maintenance as possible. The project uses [go-ios](https://github.com/danielpaulus/go-ios) to install and run WebDriverAgent from a prepared *.ipa file.   
  * You can easily add devices to the project, then start one of the two listeners which check if the devices in the list are connected to the machine and creates/destroys containers automagically.  
