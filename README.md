@@ -29,13 +29,13 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 2. Ensure a team is selected before building the application. To do this go to: *Targets* and select each target one at a time. There should be a field for assigning teams certificates to the target.
 3. Remove your **WebDriverAgent** folder from *DerivedData* and run *Clean build folder* (just in case)
 4. Next build the application by selecting the *WebDriverAgentRunner* target and build for *Generic iOS Device*. Run *Product => Build for testing*. This will create a *Products/Debug-iphoneos* in the specified project directory.  
-*Example*: **/Users/<username>/Library/Developer/Xcode/DerivedData/WebDriverAgent-dzxbpamuepiwamhdbyvyfkbecyer/Build/Products/Debug-iphoneos**
+ *Example*: **/Users/<username>/Library/Developer/Xcode/DerivedData/WebDriverAgent-dzxbpamuepiwamhdbyvyfkbecyer/Build/Products/Debug-iphoneos**
 5. Go to the "Products/Debug-iphoneos" directory and run:
-**mkdir Payload**
+ **mkdir Payload**
 6. Copy the WebDriverAgentRunner-Runner.app to the Payload directory:
-**cp -r WebDriverAgentRunner-Runner.app Payload**
+ **cp -r WebDriverAgentRunner-Runner.app Payload**
 7. Finally zip up the project as an ipa file:
-**zip -r WebDriverAgent.ipa Payload**
+ **zip -r WebDriverAgent.ipa Payload**
 8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
 
 ## Install project usage dependencies - currently Docker, unzip, jq and usbmuxd
@@ -48,7 +48,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  * Install **usbmuxd** for communication with iOS devices.
  * Create **logs/** and **ipa/** folders in the main project folder.
 
-**IMPORTANT** If you don't use this to setup dependencies you need to install all of them yourself and you need to create **logs/** and **ipa/** folders in the main project folder.
+ **IMPORTANT** If you don't use this to setup dependencies you need to install all of them yourself and you need to create **logs/** and **ipa/** folders in the main project folder.
 
 ## Set up the project environment vars in the configuration file (Recommended)
 1. Execute **./service.sh control** and select option **4) Setup environment vars**
@@ -69,7 +69,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 *selenium_hub_protocol_type*  
 *wda_bundle_id*  
 
-**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
+ **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
 ## Add devices to the configuration file from list of connected devices using the script  (Recommended)
 
@@ -78,8 +78,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 3. Select device from list of connected devices.
 4. It will be automatically added to the 'devicesList' array in the **config.json** file.
 
-**Note** Via the script you can only add devices that are connected to the machine.  
-**Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
+ **Note** Via the script you can only add devices that are connected to the machine.  
+ **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
 ### or alternatively add devices manually to the configuration file
 1. Execute **./ios list**
@@ -98,7 +98,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 ## Create the docker image
 
-**Note** If you don't want to use the opencv4nodejs functionalities you can remove it from the installation in the Dockerfile which will reduce the image size with around 2GB and will improve building speed a lot.  
+ **Note** If you don't want to use the opencv4nodejs functionalities you can remove it from the installation in the Dockerfile which will reduce the image size with around 2GB and will improve building speed a lot.  
 
 1. Run **'docker build -t ios-appium .'** or execute **./services.sh control** and select option **7) Build Docker image**
 2. Wait for the image to be created - it will be named 'ios-appium' by default.
@@ -121,7 +121,7 @@ This will clone the developer disk images repository and unzip the disk images f
 4. Change the following line '*-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages*' to  
 '*-v "{folder with the unzipped disk images}":/opt/DeveloperDiskImages*'
 
-## Start the devices listener script
+## Start the polling devices listener script
 1. Execute **./services.sh control** and select option **1) Start listener - Grid**
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
 
@@ -129,11 +129,11 @@ This will clone the developer disk images repository and unzip the disk images f
 1. Execute **./services.sh control** and select option **2) Start listener - No Grid**
 2. This will start the service with Appium servers without attempting Selenium Grid registration for local testing or different setup.
 
-**Note** You can find the listener logs in *logs/deviceSync.txt*  
-**Note** You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*  
-**Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
+ **Note** You can find the listener logs in *logs/deviceSync.txt*  
+ **Note** You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*  
+ **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
-## Kill the devices listener script
+## Kill the polling devices listener script
 1. Execute **./services.sh control** and select option **3) Stop listener**
 2. Confirm you want to stop the service and optionally destroy device containers  
   
@@ -143,14 +143,18 @@ You can destroy all device containers easily later (if you opt not to when stopp
 
 It is possible to create udev rules listener that will start/stop containers based on udev events instead of polling the connected devices with **go-ios** every few seconds (like the listener from the main script does).
 
+ * **NB** I am more than welcome on suggestions to improve the udev listener.
+
 1. Execute **./services.sh control** and select option **13) Start udev listener**  
 This will create the needed udev rules and the script that will be used by them to start/stop the containers, copy them to the respective folders and reload udev.  
+
+ * The main benefit of this approach is that it is not a constantly running script but is something that runs based on system events.
+ * The **ios_device2docker** script that starts/stops containers can be found in **/usr/local/bin**
+ * The **39-usbmuxd.rules** and **90-usbmuxd.rules** that trigger on events can be found in **/etc/udev/rules.d**
+
+## Kill the udev listener script
 2. Execute **./services.sh control** and select option **14) Stop udev listener**.  
 This will remove the udev rules and script from the respective folders and reload udev.
-
-* The main benefit of this approach is that it is not a constantly running script but is something that runs based on system events.
-* The **ios_device2docker** script that starts/stops containers can be found in **/usr/local/bin**
-* The **39-usbmuxd.rules** and **90-usbmuxd.rules** that trigger on events can be found in **/etc/udev/rules.d**
 
 ## Connect the devices to the machine - go-ios listener approach
 1. Run **docker ps -a | grep ios_device**
@@ -180,6 +184,9 @@ This will remove the udev rules and script from the respective folders and reloa
 [![Appium session](https://iili.io/umx5gV.md.png)](https://freeimage.host/i/umx5gV)
 
 ## Demo Java project
+
+This is a small project which targets to demonstrate the ability to use different Appium functionalities with **ios-appium-docker**
+
 1. Clone the [demo-project](https://github.com/shamanec/Java-Appium-iOS-Demo).
 2. Execute any/all of the 3 tests in the **Tests.java** class.  
  * **nativeTest()** - executes a simple test against the Preferences app using **Mobile.by.iOSClassChain("")** to identify and interact with an element.
@@ -192,8 +199,7 @@ This will remove the udev rules and script from the respective folders and reloa
 2. Execute **./services.sh control** and select option **12) Restore project files** - you will be asked if you want to restore all or a particular file.
 
 ## Notes
-1. You can find the logs for each device in *logs/container_$deviceName-$deviceUdid* folder - these include container, Appium and WDA logs.
-2. **NB** This project was created with only one iOS device available so there might be unforeseen issues with installing WDA or mounting images on different iOS releases.
+1. **NB** This project was created with only one iOS device available so there might be unforeseen issues with installing WDA or mounting images on different iOS releases/devices.
 
 ## Thanks
 

@@ -93,9 +93,8 @@ control_options() {
 
 #=====================UDEV LISTENER FUNCTIONS===================#
 #===============================================================#
-#The reason there are 2 separate rules is that I couldn't manage to get usbmuxd successfully running with the device events
-#Maybe I am doing something wrong but if I tried to trigger usbmuxd and the device via the same service file usbmuxd just wouldn't start properly
-#and the device was not accessible to the container
+#The reason there are 2 separate rules is that I couldn't manage to get usbmuxd successfully running along with the device events
+#Maybe I am doing something wrong but if I tried to trigger usbmuxd and the device via the same service file usbmuxd just wouldn't start properly and the device was not accessible to the container
 #It might not be a problem if usbmuxd is already running, but it is when connecting first device
 
 #This function creates 90-usbmuxd.rules file that will start containers in case registered device is connected to the machine
@@ -421,12 +420,12 @@ setup_developer_disk_images() {
   rm *.zip
 }
 
-#Build Docker image
+#Build Docker image with default name
 docker_build() {
     docker build -t ios-appium .
 }
 
-#Delete Docker image from local repo
+#Delete Docker image with default name from local repo
 remove_docker_image() {
     docker rmi "$(docker images -q ios-appium)"
 }
@@ -466,9 +465,8 @@ install_dependencies() {
   mkdir ipa
 }
 
-#INSTALL DOCKER - tested on Ubuntu 18.04.5 LTS
+#tested on Ubuntu 18.04.5 LTS
 install_docker() {
-  #Update your existing list of packages
   sudo apt update
   #Install prerequisites
   sudo apt install apt-transport-https ca-certificates curl software-properties-common
@@ -478,18 +476,13 @@ install_docker() {
   sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
   #Update the packages with the new repo
   sudo apt update
-  #Make sure you install from Docker repo
   apt-cache policy docker-ce
-  #Finally install Docker
   sudo apt install docker-ce
 }
 
-#EXECUTING DOCKER COMMANDS WITHOUT SUDO
 execute_docker_no_sudo() {
   #Add your username to docker group
   sudo usermod -aG docker "${USER}"
-  #Confirm the user is added with:
-  id -nG
 }
 
 #=======================BACKUP AND RESTORE=========================#
