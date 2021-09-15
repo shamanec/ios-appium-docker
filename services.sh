@@ -25,7 +25,7 @@ control-function() {
 }
 
 control_options() {
-  control_options=("Start listener - Grid" "Start listener - No Grid" "Stop listener" "Setup environment vars" "Setup dependencies" "Setup developer disk images" "Build Docker image" "Remove Docker image" "Add a device" "Destroy containers" "Backup project files" "Restore project files" "Setup udev listener" "Remove udev listener" "Help")
+  control_options=("Start listener - Grid" "Start listener - No Grid" "Stop listener" "Setup environment vars" "Setup dependencies" "Setup developer disk images" "Build Docker image" "Remove Docker image" "Add a device" "Destroy containers" "Backup project files" "Restore project files" "Setup udev listener" "Remove udev listener" "Start single container" "Help")
   select option in "${control_options[@]}"; do
     case $option in
     "Start listener - Grid")
@@ -81,6 +81,10 @@ control_options() {
       ;;
     "Remove udev listener")
       remove_udev
+      break
+      ;;
+    "Start single container")
+      start_single_container
       break
       ;;
     "Help")
@@ -220,6 +224,32 @@ destroy_containers() {
   echo "Containers stopped and removed. Closing..."
   sleep 2
   exit
+}
+
+start_single_container() {
+  #Input and read device UDID
+  device_selection_list
+
+  wda_bundle_id=$(cat configs/config.json | jq -r ".wda_bundle_id")
+  
+  docker run --name "ios_device_$device_udid" \
+    -p 4841:4841 \
+    -p 20001:20001 \
+    -p 20101:20101 \
+    -e DEVICE_UDID="$device_udid" \
+    -e WDA_PORT="20001" \
+    -e MJPEG_PORT="20101" \
+    -e APPIUM_PORT="4841" \
+    -e DEVICE_OS_VERSION="$os_version" \
+    -e DEVICE_NAME="iPhone_Device" \
+    -e WDA_BUNDLEID="$wda_bundle_id" \
+    -e ON_GRID=false \
+    -v /var/run/usbmuxd:/var/run/usbmuxd \
+    -v /var/lib/lockdown:/var/lib/lockdown \
+    -v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
+    -v "$(pwd)"/ipa:/opt/ipa \
+    -v "$(pwd)/container_logs":/opt/logs \
+    ios-appium >>single_container.txt 2>&1 &
 }
 
 #======================ADD DEVICE TO LIST FUNCTIONS==========================#

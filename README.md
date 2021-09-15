@@ -73,6 +73,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 ## Add devices to the configuration file from list of connected devices using the script  (Recommended)
 
+ **Note** You don't need to do this if you are not going to use either of the listeners and will just spin up a single container for testing.  
+
 1. Execute **./services.sh control** and select option **9) Add a device**
 2. Type device name
 3. Select device from list of connected devices.
@@ -120,6 +122,15 @@ This will clone the developer disk images repository and unzip the disk images f
 3. Open the **services.sh** file and find the **start-container** function.
 4. Change the following line '*-v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages*' to  
 '*-v "{folder with the unzipped disk images}":/opt/DeveloperDiskImages*'
+
+## Start a single container to try it out
+1. Connect a device to the machine.
+2. Execute **./services.sh control** and select option **15) Start single container**
+3. You will be presented with a list of the connected devices - select the device for which you want the container created.
+
+* The container will be created with default Appium port 4841 and will not attempt to connect to Selenium Grid.
+* The Appium and WDA logs can be found in **container_logs** folder.
+* To destroy the container you can execute **./services.sh control** and select option **10) Destroy containers**.
 
 ## Start the polling devices listener script
 1. Execute **./services.sh control** and select option **1) Start listener - Grid**
