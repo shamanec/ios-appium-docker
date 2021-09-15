@@ -50,7 +50,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
  **IMPORTANT** If you don't use this to setup dependencies you need to install all of them yourself and you need to create **logs/** and **ipa/** folders in the main project folder.
 
-## Set up the project environment vars in the configuration file (Recommended)
+## Set up the project environment vars in the configuration file
+### Set up the project environment vars using the script (Recommended)
 1. Execute **./service.sh control** and select option **4) Setup environment vars**
 2. Provide the requested data:
  * Selenium Hub Host(if connecting to Selenium Grid)
@@ -59,7 +60,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  * hub protocol(if connecting to Selenium Grid)
  * WebDriverAgent bundleId (empty bundleId value will use the provided IPA as default).
 
-### or alternatively
+#### or alternatively
 
 1. Open the **configs/config.json** file.
 2. Change the values for each of the 5 keys in the json:  
@@ -71,7 +72,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
  **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
-## Add devices to the configuration file from list of connected devices using the script  (Recommended)
+## Add devices to the configuration file
+### Add devices to the configuration file from list of connected devices using the script  (Recommended)
 
  **Note** You don't need to do this if you are not going to use either of the listeners and will just spin up a single container for testing.  
 
@@ -83,7 +85,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  **Note** Via the script you can only add devices that are connected to the machine.  
  **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
-### or alternatively add devices manually to the configuration file
+#### or alternatively add devices manually to the configuration file
 1. Execute **./ios list**
 2. Get the UDIDs of all currently connected devices.
 3. Open the **configs/config.json** file.
@@ -109,7 +111,7 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 1. You can remove the default docker image 'ios-appium' using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
 
-## Prepare the Developer Disk Images
+## Prepare the Developer Disk Images (Recommended)
 
 1. Execute **./services.sh control** and select option **6) Setup developer disk images**  
 
@@ -132,11 +134,12 @@ This will clone the developer disk images repository and unzip the disk images f
 * The Appium and WDA logs can be found in **container_logs** folder.
 * To destroy the container you can execute **./services.sh control** and select option **10) Destroy containers**.
 
-## Start the polling devices listener script
+## Polling devices listener script (Recommended)
+### Start the polling devices listener script
 1. Execute **./services.sh control** and select option **1) Start listener - Grid**
 2. Observe *logs/deviceSync.txt* - you'll notice information about the devices connections and containers availability.
 
-### or alternatively if you won't connect to Selenium Grid
+#### or alternatively if you won't connect to Selenium Grid
 1. Execute **./services.sh control** and select option **2) Start listener - No Grid**
 2. This will start the service with Appium servers without attempting Selenium Grid registration for local testing or different setup.
 
@@ -144,13 +147,14 @@ This will clone the developer disk images repository and unzip the disk images f
  **Note** You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*  
  **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
-## Kill the polling devices listener script
+### Kill the polling devices listener script
 1. Execute **./services.sh control** and select option **3) Stop listener**
 2. Confirm you want to stop the service and optionally destroy device containers  
   
 You can destroy all device containers easily later (if you opt not to when stopping service) using **./services.sh control** and selecting option **10) Destroy containers**
 
-## Start a udev listener script (working but not fully finalized, not recommended)
+## Udev listener script (working but not fully finalized, not recommended)
+### Start a udev listener script
 
 It is possible to create udev rules listener that will start/stop containers based on udev events instead of polling the connected devices with **go-ios** every few seconds (like the listener from the main script does).
 
@@ -163,11 +167,11 @@ This will create the needed udev rules and the script that will be used by them 
  * The **ios_device2docker** script that starts/stops containers can be found in **/usr/local/bin**
  * The **39-usbmuxd.rules** and **90-usbmuxd.rules** that trigger on events can be found in **/etc/udev/rules.d**
 
-## Kill the udev listener script
+### Kill the udev listener script
 2. Execute **./services.sh control** and select option **14) Stop udev listener**.  
 This will remove the udev rules and script from the respective folders and reload udev.
 
-## Connect the devices to the machine - go-ios listener approach
+## Connect the devices to the machine - polling devices(go-ios) listener approach
 1. Run **docker ps -a | grep ios_device**
 2. You should see a container for each connected device that is registered in *config.json*
 3. You should see WebDriverAgent installed on each of the connected devices.
