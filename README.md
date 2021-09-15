@@ -73,9 +73,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  **Note** For more information on the fields in the json you can refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#configjson)
 
 ## Add devices to the configuration file
+**Note** You don't need to do this if you are not going to use either of the listeners and will just spin up a single container for testing.  
 ### Add devices to the configuration file from list of connected devices using the script  (Recommended)
-
- **Note** You don't need to do this if you are not going to use either of the listeners and will just spin up a single container for testing.  
 
 1. Execute **./services.sh control** and select option **9) Add a device**
 2. Type device name
