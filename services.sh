@@ -637,6 +637,9 @@ echo_help() {
 	  10) Destroy containers		Stops and removes all iOS device containers
 	  11) Backup project files		Backup all or particular project files before working on them
 	  12) Restore project files		Restore files from backup
+	  13) Setup udev listener	        Creates udev rules and prepares a new script that will listen on udev events and create/destroy containers instead of polling go-ios
+	  14) Remove udev listener	        Removes the udev rules and script from the respective folders and reloads udev
+	  15) Start single container		Creates a container with default Appium port 4841 for a device selected from a list(connected to the machine)
 	  13) Help				Print this section"
 }
 
