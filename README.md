@@ -172,7 +172,7 @@ This will create the needed udev rules and the script that will be used by them 
  * The **ios_device2docker** script that starts/stops containers can be found in **/usr/local/bin**
  * The **39-usbmuxd.rules** and **90-usbmuxd.rules** that trigger on events can be found in **/etc/udev/rules.d**
 
-### Connect the devices to the machine - udev listener approach
+### Connect the devices to the machine
 1. Disconnect all devices from the machine and wait for up to a minute - all containers if any should be destroyed - do this step just in case.
 2. Connect each device.
 3. Run **docker ps -a | grep ios_device**
