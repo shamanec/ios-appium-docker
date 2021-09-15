@@ -110,13 +110,14 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
 
 1. You can remove the default docker image 'ios-appium' using the script by executing **./services.sh control** and selecting option **8) Remove Docker image**.
 
-## Prepare the Developer Disk Images (Recommended)
+## Prepare the Developer Disk images
+### Prepare the Developer Disk Images using the script (Recommended)
 
 1. Execute **./services.sh control** and select option **6) Setup developer disk images**  
 
 This will clone the developer disk images repository and unzip the disk images for each supported version in the respective folders.
 
-### or alternatively if you don't want the disk images in the same folder as the project
+#### or alternatively if you don't want the disk images in the same folder as the project
 
 1. **git clone https://github.com/shamanec/iOS-DeviceSupport.git** in a folder of your choice.
 2. Unzip all the files as is.
@@ -146,6 +147,11 @@ This will clone the developer disk images repository and unzip the disk images f
  **Note** You will find a log file for each separate device container in *logs/* in the format *container_$deviceName_$device_udid*  
  **Note** For more information on the what happens in the container underneath refer to [configs](https://github.com/shamanec/ios-appium-docker/tree/master/configs#wdasyncsh)
 
+### Connect the devices to the machine
+1. Run **docker ps -a | grep ios_device**
+2. You should see a container for each connected device that is registered in *config.json*
+3. You should see WebDriverAgent installed on each of the connected devices.
+
 ### Kill the polling devices listener script
 1. Execute **./services.sh control** and select option **3) Stop listener**
 2. Confirm you want to stop the service and optionally destroy device containers  
@@ -166,16 +172,7 @@ This will create the needed udev rules and the script that will be used by them 
  * The **ios_device2docker** script that starts/stops containers can be found in **/usr/local/bin**
  * The **39-usbmuxd.rules** and **90-usbmuxd.rules** that trigger on events can be found in **/etc/udev/rules.d**
 
-### Kill the udev listener script
-2. Execute **./services.sh control** and select option **14) Stop udev listener**.  
-This will remove the udev rules and script from the respective folders and reload udev.
-
-## Connect the devices to the machine - polling devices(go-ios) listener approach
-1. Run **docker ps -a | grep ios_device**
-2. You should see a container for each connected device that is registered in *config.json*
-3. You should see WebDriverAgent installed on each of the connected devices.
-
-## Connect the devices to the machine - udev listener approach
+### Connect the devices to the machine - udev listener approach
 1. Disconnect all devices from the machine and wait for up to a minute - all containers if any should be destroyed - do this step just in case.
 2. Connect each device.
 3. Run **docker ps -a | grep ios_device**
@@ -183,6 +180,10 @@ This will remove the udev rules and script from the respective folders and reloa
 5. You should see WebDriverAgent installed on each of the connected devices.
 
 * To view the udev logs while connecting devices execute **sudo udevadm control --log-priority=debug** and then **tail -f /var/log/syslog**.
+
+### Kill the udev listener script
+2. Execute **./services.sh control** and select option **14) Stop udev listener**.  
+This will remove the udev rules and script from the respective folders and reload udev.
 
 ## Add test IPA files
 1. Copy and paste your test IPA file in the **ipa/** folder.
