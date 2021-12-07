@@ -13,6 +13,7 @@ import (
     "github.com/gorilla/mux"
     "html/template"
     "strings"
+    "regexp"
 )
 
 // Devices struct which contains
@@ -189,6 +190,7 @@ type ContainerRow struct {
   ContainerStatus string
   ContainerPorts string
   ContainerName string
+  DeviceUDID string
 }
 
 // Function that returns all current iOS device containers
@@ -209,8 +211,11 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   for _, line := range strings.Split(strings.TrimSuffix(out.String(), "\n"), "\n") {
     // Split each line into parameters by space
     s := strings.Split(line, " ")
+    // Extract the device udid from the container name
+    re := regexp.MustCompile("[^-]*$")
+    match := re.FindStringSubmatch(s[4])
     // Create a struct object for the respective container using the parameters by the above split
-    var container_row = ContainerRow{ContainerID: s[0], ImageName: s[1], ContainerStatus: s[2], ContainerPorts: s[3], ContainerName: s[4]}
+    var container_row = ContainerRow{ContainerID: s[0], ImageName: s[1], ContainerStatus: s[2], ContainerPorts: s[3], ContainerName: s[4], DeviceUDID: match[0]}
     // Append each struct object to the rows that will be displayed in the table
     rows = append(rows, container_row)
   }
