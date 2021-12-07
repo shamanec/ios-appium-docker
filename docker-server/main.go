@@ -196,13 +196,15 @@ type ContainerRow struct {
 // Function that returns all current iOS device containers
 func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Execute the command to get the current containers and get the output
-  cmd := exec.Command("cat", "/Users/shabanovn/Desktop/test_containers.txt")
+  command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  cmd := exec.Command("bash","-c",command_string)
   var out bytes.Buffer
   cmd.Stdout = &out
   err := cmd.Run()
   if err != nil {
     log.Fatal(err)
   }
+  fmt.Println("The command is: " + out.String())
 
   // Define the rows that will be built for the struct used by the template for the table
   rows := []ContainerRow{}
@@ -210,7 +212,7 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Split the output of the shell command by line
   for _, line := range strings.Split(strings.TrimSuffix(out.String(), "\n"), "\n") {
     // Split each line into parameters by space
-    s := strings.Split(line, " ")
+    s := strings.Split(line, "*")
     // Extract the device udid from the container name
     re := regexp.MustCompile("[^-]*$")
     match := re.FindStringSubmatch(s[4])
@@ -221,8 +223,8 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   }
   var index = template.Must(template.ParseFiles("static/index.html"))
   if err := index.Execute(w, rows); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+  }
 }
 
 func handleRequests() {
