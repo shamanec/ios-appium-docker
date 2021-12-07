@@ -1,8 +1,58 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <title>Hello World</title>
-  </head>
-  <body>
-    <h2>Hello World!</h2>
-  </body>
+  <style>
+    table, td, th {
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th, td {
+      padding: 15px;
+    }
+  </style>
+	<head>
+		<meta charset="UTF-8">
+		<title>My page</title>
+	</head>
+	<body>
+		<table>
+			<tr>
+        <th>ContainerID</th>
+				<th>Image Name</th>
+        <th>Container Status</th>
+        <th>Container Ports</th>
+        <th>Container Name</th>
+        <th>Additional info</th>
+			</tr>
+		{{range .}}
+			<tr>
+        <td>{{.ContainerID}}</td>
+				<td>{{.ImageName}}</td>
+        <td>{{.ContainerStatus}}</td>
+        <td>{{.ContainerPorts}}</td>
+        <td>{{.ContainerName}}</td>
+        <td colspan="6"><a href="#" id="show_1">Additional info</a>
+          <div id="extra_1" style="display: none;">
+              <br>hidden row
+              <br>hidden row
+              <br>hidden row
+          </div>
+        </td>
+			</tr>
+		{{end}}
+		</table>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      $("a[id^=show_]").click(function(){
+        $(this).find('span').text(function(_, value){return value=='-'?'+':'-'});
+        $(this).nextUntil('tr.header').slideToggle(100, function(){
+        });
+      });
+    </script>
+	</body>
 </html>

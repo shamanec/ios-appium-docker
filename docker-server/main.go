@@ -11,6 +11,8 @@ import (
     "os/exec"
     "bytes"
     "github.com/gorilla/mux"
+    "html/template"
+    "strings"
 )
 
 // Devices struct which contains
@@ -104,18 +106,6 @@ func getProjectConfig(w http.ResponseWriter, r *http.Request){
   fmt.Fprintf(w, "WDA Bundle ID: " + projectConfig.WdaBundleID + "\n")
 }
 
-// Function that returns all current iOS device containers
-func getIOSContainers(w http.ResponseWriter, r *http.Request){
-  cmd := exec.Command("ls", "-la", "/Users/shabanovn/Desktop")
-  var out bytes.Buffer
-  cmd.Stdout = &out
-  err := cmd.Run()
-  if err != nil {
-    log.Fatal(err)
-  }
-  fmt.Fprintf(w, out.String())
-}
-
 func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
   vars := mux.Vars(r)
   key := vars["device_udid"]
@@ -155,6 +145,81 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
   }
 }
 
+// Function that returns all the project configuration values from config.json
+func getDevicesListJSON(w http.ResponseWriter, r *http.Request){
+  // Open our jsonFile
+  jsonFile, err := os.Open("../configs/config.json")
+  // if we os.Open returns an error then handle it
+  if err != nil {
+    fmt.Println(err)
+  }
+
+  fmt.Println("Successfully opened config.json")
+  // defer the closing of our jsonFile so that we can parse it later on
+  defer jsonFile.Close()
+
+  byteValue, _ := ioutil.ReadAll(jsonFile)
+
+  // we initialize the devices array
+  var devices Devices
+
+  // we unmarshal our byteArray which contains our
+  // jsonFile's content into 'users' which we defined above
+  json.Unmarshal(byteValue, &devices)
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusCreated)
+  json.NewEncoder(w).Encode(devices)
+}
+
+func tableTest(w http.ResponseWriter, r *http.Request) {
+  rows := []ContainerRow{
+		{ContainerID: "test1", ImageName: "1", ContainerStatus: "Up", ContainerPorts: "1080", ContainerName: "ios_device_something"},
+		{ContainerID: "test2", ImageName: "2", ContainerStatus: "Down", ContainerPorts: "1081", ContainerName: "ios_device_something2"},
+	}
+  var index = template.Must(template.ParseFiles("static/index.html"))
+  if err := index.Execute(w, rows); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+type ContainerRow struct {
+  ContainerID string
+  ImageName string
+  ContainerStatus string
+  ContainerPorts string
+  ContainerName string
+}
+
+// Function that returns all current iOS device containers
+func getIOSContainers(w http.ResponseWriter, r *http.Request){
+  // Execute the command to get the current containers and get the output
+  cmd := exec.Command("cat", "/Users/shabanovn/Desktop/test_containers.txt")
+  var out bytes.Buffer
+  cmd.Stdout = &out
+  err := cmd.Run()
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  // Define the rows that will be built for the struct used by the template for the table
+  rows := []ContainerRow{}
+
+  // Split the output of the shell command by line
+  for _, line := range strings.Split(strings.TrimSuffix(out.String(), "\n"), "\n") {
+    // Split each line into parameters by space
+    s := strings.Split(line, " ")
+    // Create a struct object for the respective container using the parameters by the above split
+    var container_row = ContainerRow{ContainerID: s[0], ImageName: s[1], ContainerStatus: s[2], ContainerPorts: s[3], ContainerName: s[4]}
+    // Append each struct object to the rows that will be displayed in the table
+    rows = append(rows, container_row)
+  }
+  var index = template.Must(template.ParseFiles("static/index.html"))
+  if err := index.Execute(w, rows); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 func handleRequests() {
   // Create a new instance of the mux router
   myRouter := mux.NewRouter().StrictSlash(true)
@@ -164,6 +229,8 @@ func handleRequests() {
   myRouter.HandleFunc("/projectConfig", getProjectConfig)
   myRouter.HandleFunc("/iOSContainers", getIOSContainers)
   myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
+  myRouter.HandleFunc("/devicesListJSON", getDevicesListJSON)
+  myRouter.HandleFunc("/test", tableTest)
 
   // finally, instead of passing in nil, we want
   // to pass in our newly created router as the second
@@ -172,5 +239,6 @@ func handleRequests() {
 }
 
 func main() {
+  http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
   handleRequests()
 }
