@@ -149,58 +149,19 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
   // jsonFile's content into 'users' which we defined above
   json.Unmarshal(byteValue, &devices)
 
-  w.Header().Set("Content-Type", "application/json")
+  w.Header().Set("Content-Type", "text/plain")
 
   // Loop over the devices and return info only on the device which UDID matches the path key
   for i := 0; i < len(devices.Devices); i++ {
     if devices.Devices[i].DeviceUDID == key {
-      // fmt.Fprintf(w, "Device Name: " + devices.Devices[i].DeviceName + "\n")
-      // fmt.Fprintf(w, "Appium Port: " + strconv.Itoa(devices.Devices[i].AppiumPort) + "\n")
-      // fmt.Fprintf(w, "Device OS version: " + devices.Devices[i].DeviceOSVersion + "\n")
-      // fmt.Fprintf(w, "Device UDID: " + devices.Devices[i].DeviceUDID + "\n")
-      // fmt.Fprintf(w, "WDA Mjpeg port: " + strconv.Itoa(devices.Devices[i].WdaMjpegPort) + "\n")
-      // fmt.Fprintf(w, "WDA Port: " + strconv.Itoa(devices.Devices[i].WdaPort) + "\n")
-      json.NewEncoder(w).Encode(devices.Devices[i])
+       fmt.Fprintf(w, "Device Name: " + devices.Devices[i].DeviceName + "\n")
+       fmt.Fprintf(w, "Appium Port: " + strconv.Itoa(devices.Devices[i].AppiumPort) + "\n")
+       fmt.Fprintf(w, "Device OS version: " + devices.Devices[i].DeviceOSVersion + "\n")
+       fmt.Fprintf(w, "Device UDID: " + devices.Devices[i].DeviceUDID + "\n")
+       fmt.Fprintf(w, "WDA Mjpeg port: " + strconv.Itoa(devices.Devices[i].WdaMjpegPort) + "\n")
+       fmt.Fprintf(w, "WDA Port: " + strconv.Itoa(devices.Devices[i].WdaPort) + "\n")
     }
   }
-}
-
-// Function that returns all the project configuration values from config.json
-func getDevicesListJSON(w http.ResponseWriter, r *http.Request){
-  // Open our jsonFile
-  jsonFile, err := os.Open("../configs/config.json")
-  // if we os.Open returns an error then handle it
-  if err != nil {
-    fmt.Println(err)
-  }
-
-  fmt.Println("Successfully opened config.json")
-  // defer the closing of our jsonFile so that we can parse it later on
-  defer jsonFile.Close()
-
-  byteValue, _ := ioutil.ReadAll(jsonFile)
-
-  // we initialize the devices array
-  var devices Devices
-
-  // we unmarshal our byteArray which contains our
-  // jsonFile's content into 'users' which we defined above
-  json.Unmarshal(byteValue, &devices)
-
-  w.Header().Set("Content-Type", "application/json")
-  w.WriteHeader(http.StatusCreated)
-  json.NewEncoder(w).Encode(devices)
-}
-
-func tableTest(w http.ResponseWriter, r *http.Request) {
-  rows := []ContainerRow{
-		{ContainerID: "test1", ImageName: "1", ContainerStatus: "Up", ContainerPorts: "1080", ContainerName: "ios_device_something"},
-		{ContainerID: "test2", ImageName: "2", ContainerStatus: "Down", ContainerPorts: "1081", ContainerName: "ios_device_something2"},
-	}
-  var index = template.Must(template.ParseFiles("static/index.html"))
-  if err := index.Execute(w, rows); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 }
 
 type ContainerRow struct {
@@ -215,8 +176,8 @@ type ContainerRow struct {
 // Function that returns all current iOS device containers
 func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Execute the command to get the current containers and get the output
-  //command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
-  command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
+  command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  //command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
   cmd := exec.Command("bash","-c",command_string)
   var out bytes.Buffer
   cmd.Stdout = &out
@@ -224,7 +185,6 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   if err != nil {
     log.Fatal(err)
   }
-  fmt.Println("The command is: " + out.String())
 
   // Define the rows that will be built for the struct used by the template for the table
   rows := []ContainerRow{}
@@ -247,6 +207,24 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   }
 }
 
+func restartContainer(w http.ResponseWriter, r *http.Request){
+  vars := mux.Vars(r)
+  key := vars["container_id"]
+  // Execute the command to restart the container by container ID
+  command_string := "docker restart " + key
+  //command_string := "ping -c 5 abv.bg"
+  //command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
+  cmd := exec.Command("bash","-c",command_string)
+  fmt.Println(string(key))
+  var out bytes.Buffer
+  cmd.Stdout = &out
+  err := cmd.Run()
+  if err != nil {
+    log.Fatal(err)
+  }
+  fmt.Println("The command output is: " + out.String())
+}
+
 func handleRequests() {
   // Create a new instance of the mux router
   myRouter := mux.NewRouter().StrictSlash(true)
@@ -256,8 +234,7 @@ func handleRequests() {
   myRouter.HandleFunc("/projectConfig", getProjectConfig)
   myRouter.HandleFunc("/iOSContainers", getIOSContainers)
   myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
-  myRouter.HandleFunc("/devicesListJSON", getDevicesListJSON)
-  myRouter.HandleFunc("/test", tableTest)
+  myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
 
   // assets
   fs := http.FileServer(http.Dir("assets"))
