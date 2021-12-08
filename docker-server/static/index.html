@@ -3,7 +3,7 @@
   <style>
     table, td, th {
       border: 1px solid #ddd;
-      text-align: left;
+      text-align: center;
     }
 
     table {
@@ -37,6 +37,7 @@
         <th>Container Ports</th>
         <th>Container Name</th>
         <th>Additional info</th>
+        <th>Actions</th>
 			</tr>
 		{{range .}}
 			<tr>
@@ -49,14 +50,12 @@
           <div>
             <!-- <button class="clsInfoButtons" id={{.DeviceUDID}} onclick="toggleDeviceInfoTable();"><a href="localhost:10000/device/{{.DeviceUDID}}">Device Info</a></button> -->
             <button class="clsInfoButton" id="clsInfoButton" onclick="showDeviceInfo();" value={{.DeviceUDID}}>Device Info</button>
-            <tr><td colspan="3">
-              <div id="deviceInfo" hidden>
-                <p>Koleo</p>
-                <button class="clsInfoButtons" id="restartContainerButton">Restart container</button>
-                <br></br>
-                <button class="clsInfoButtons" id="getContainerLogs">Get container logs</button>
-              </div>
-            </td></tr>
+          </div>
+        </td>
+        <td style="text-align:center;">
+          <div>
+            <button class="clsActionButton" id="restartContainerButton">Restart container</button>
+            <button class="clsActionButton" id="restartContainerButton">Container logs</button>
           </div>
         </td>
 			</tr>
