@@ -14,13 +14,22 @@
     th, td {
       padding: 15px;
     }
+    .clsInfoButtons
+    {
+      width: 128px;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 	<head>
 		<meta charset="UTF-8">
-		<title>My page</title>
+		<title>Containers Info</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
 	</head>
 	<body>
 		<table>
+      <caption>iOS Containers</caption>
 			<tr>
         <th>ContainerID</th>
 				<th>Image Name</th>
@@ -36,11 +45,18 @@
         <td>{{.ContainerStatus}}</td>
         <td>{{.ContainerPorts}}</td>
         <td>{{.ContainerName}}</td>
-        <td id={{.DeviceUDID}}><a href="#" id="show_1">Additional info</a>
-          <div id="extra_1" style="display: none;">
-              <br>hidden row
-              <br>hidden row
-              <br>hidden row
+        <td style="text-align:center;">
+          <div>
+            <!-- <button class="clsInfoButtons" id={{.DeviceUDID}} onclick="toggleDeviceInfoTable();"><a href="localhost:10000/device/{{.DeviceUDID}}">Device Info</a></button> -->
+            <button class="clsInfoButton" id="clsInfoButton" onclick="showDeviceInfo();" value={{.DeviceUDID}}>Device Info</button>
+            <tr><td colspan="3">
+              <div id="deviceInfo" hidden>
+                <p>Koleo</p>
+                <button class="clsInfoButtons" id="restartContainerButton">Restart container</button>
+                <br></br>
+                <button class="clsInfoButtons" id="getContainerLogs">Get container logs</button>
+              </div>
+            </td></tr>
           </div>
         </td>
 			</tr>
@@ -48,11 +64,15 @@
 		</table>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-      $("a[id^=show_]").click(function(){
-        $(this).find('span').text(function(_, value){return value=='-'?'+':'-'});
-        $(this).nextUntil('tr.header').slideToggle(100, function(){
-        });
-      });
+      function showDeviceInfo() {
+        var udidFromButton = document.getElementById("clsInfoButton").value
+        var x = document.getElementById("deviceInfo");
+        if (x.style.display === "none") {
+          x.style.display = "block";
+        } else {
+          x.style.display = "none";
+        }
+      }
     </script>
 	</body>
 </html>

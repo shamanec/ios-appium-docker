@@ -41,6 +41,22 @@ type ProjectConfig struct {
   WdaBundleID string `json:"wda_bundle_id"`
 }
 
+type ConfigValues struct {
+	DevicesList []struct {
+		AppiumPort      int    `json:"appium_port"`
+		DeviceName      string `json:"device_name"`
+		DeviceOsVersion string `json:"device_os_version"`
+		DeviceUdid      string `json:"device_udid"`
+		WdaMjpegPort    int    `json:"wda_mjpeg_port"`
+		WdaPort         int    `json:"wda_port"`
+	} `json:"devicesList"`
+	DevicesHost             string `json:"devices_host"`
+	SeleniumHubHost         string `json:"selenium_hub_host"`
+	SeleniumHubPort         string `json:"selenium_hub_port"`
+	SeleniumHubProtocolType string `json:"selenium_hub_protocol_type"`
+	WdaBundleID             string `json:"wda_bundle_id"`
+}
+
 // Function that returns the full list of devices from config.json and their data
 func getDevicesList(w http.ResponseWriter, r *http.Request){
   // Open our jsonFile
@@ -133,15 +149,18 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
   // jsonFile's content into 'users' which we defined above
   json.Unmarshal(byteValue, &devices)
 
+  w.Header().Set("Content-Type", "application/json")
+
   // Loop over the devices and return info only on the device which UDID matches the path key
   for i := 0; i < len(devices.Devices); i++ {
     if devices.Devices[i].DeviceUDID == key {
-      fmt.Fprintf(w, "Device Name: " + devices.Devices[i].DeviceName + "\n")
-      fmt.Fprintf(w, "Appium Port: " + strconv.Itoa(devices.Devices[i].AppiumPort) + "\n")
-      fmt.Fprintf(w, "Device OS version: " + devices.Devices[i].DeviceOSVersion + "\n")
-      fmt.Fprintf(w, "Device UDID: " + devices.Devices[i].DeviceUDID + "\n")
-      fmt.Fprintf(w, "WDA Mjpeg port: " + strconv.Itoa(devices.Devices[i].WdaMjpegPort) + "\n")
-      fmt.Fprintf(w, "WDA Port: " + strconv.Itoa(devices.Devices[i].WdaPort) + "\n")
+      // fmt.Fprintf(w, "Device Name: " + devices.Devices[i].DeviceName + "\n")
+      // fmt.Fprintf(w, "Appium Port: " + strconv.Itoa(devices.Devices[i].AppiumPort) + "\n")
+      // fmt.Fprintf(w, "Device OS version: " + devices.Devices[i].DeviceOSVersion + "\n")
+      // fmt.Fprintf(w, "Device UDID: " + devices.Devices[i].DeviceUDID + "\n")
+      // fmt.Fprintf(w, "WDA Mjpeg port: " + strconv.Itoa(devices.Devices[i].WdaMjpegPort) + "\n")
+      // fmt.Fprintf(w, "WDA Port: " + strconv.Itoa(devices.Devices[i].WdaPort) + "\n")
+      json.NewEncoder(w).Encode(devices.Devices[i])
     }
   }
 }
@@ -196,7 +215,8 @@ type ContainerRow struct {
 // Function that returns all current iOS device containers
 func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Execute the command to get the current containers and get the output
-  command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  //command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
   cmd := exec.Command("bash","-c",command_string)
   var out bytes.Buffer
   cmd.Stdout = &out
@@ -239,6 +259,9 @@ func handleRequests() {
   myRouter.HandleFunc("/devicesListJSON", getDevicesListJSON)
   myRouter.HandleFunc("/test", tableTest)
 
+  // assets
+  fs := http.FileServer(http.Dir("assets"))
+  myRouter.Handle("/assets/", http.StripPrefix("/assets/", fs))
   // finally, instead of passing in nil, we want
   // to pass in our newly created router as the second
   // argument
@@ -246,6 +269,5 @@ func handleRequests() {
 }
 
 func main() {
-  http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets"))))
   handleRequests()
 }
