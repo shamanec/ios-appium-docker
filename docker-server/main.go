@@ -226,7 +226,7 @@ func restartContainer(w http.ResponseWriter, r *http.Request){
 }
 
 func getInitialPage(w http.ResponseWriter, r *http.Request) {
-  var index = template.Must(template.ParseFiles("static/main_page.html"))
+  var index = template.Must(template.ParseFiles("static/index.html"))
   if err := index.Execute(w, nil); err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
   }
