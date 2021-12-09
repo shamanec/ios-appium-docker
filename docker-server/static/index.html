@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
   <style>
-    .clsContainerTypeButtons
-    {
+    .indexPageButtons {
       gap: 10px;
       font-size: 14px;
       cursor: pointer;
@@ -18,12 +17,11 @@
       width: 150px;
     }
 
-    .clsContainerTypeButtons:hover
-    {
+    .indexPageButtons:hover {
       background-color: #3e8e41
     }
 
-    .clsContainerTypeButtons:active {
+    .indexPageButtons:active {
       background-color: #3e8e41;
       box-shadow: 0 5px #666;
       transform: translateY(4px);
@@ -39,11 +37,43 @@
     <link rel="stylesheet" href="/assets/styles.css" />
 	</head>
 	<body>
-    <span>Welcome to the Appium Docker control page.<br/>Please select the type of containers you want to view:</span>
+    <span>Welcome to the Appium Docker control page.<br/>Please select what you want to view:</span>
     <br></br>
-		<button class="clsContainerTypeButtons" id="clsInfoButton" onclick="openAndroidContainersPage(this);" style="margin:auto;">Android Containers</button>
+		<button class="indexPageButtons" id="androidContainersButton" onclick="openAndroidContainersPage(this);" style="margin:auto;">Android Containers</button>
     <br></br>
-    <button class="clsContainerTypeButtons" id="containerLogsButton" onclick="location.href='/iOSContainers';" style="margin:auto;">iOS Containers</button>
+    <button class="indexPageButtons" id="iOSContainersButton" onclick="location.href='/iOSContainers';" style="margin:auto;">iOS Containers</button>
+    <br></br>
+    <button class="indexPageButtons" id="projectInfoButton" onclick="showProjectConfig()" style="margin:auto;">Configuration info</button>
+    <br></br>
+    <span id="configurationInfoSpan" style="display:none;"></span>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	</body>
+  <script>
+    <!-- Show the configuration info -->
+    function showProjectConfig() {
+      <!-- Get the project config span element-->
+      var infoSpan = document.getElementById("configurationInfoSpan")
+
+      <!-- Call the endpoint that will get the device info -->
+      <!-- Then present the modal with the returned data -->
+      if (infoSpan.style.display === "none") {
+        $.ajax({
+          async: false,
+          dataType: "text",
+          type: "GET",
+          url: "/projectConfig",
+          success: function(data) {
+            <!-- Set the modal text -->
+            $('#configurationInfoSpan').html(data)
+          }
+        });
+      }
+      
+      if (infoSpan.style.display === "none") {
+        infoSpan.style.display = "block";
+      } else {
+        infoSpan.style.display = "none";
+      }
+    }
+  </script>
 </html>

@@ -41,6 +41,15 @@ type ProjectConfig struct {
   WdaBundleID string `json:"wda_bundle_id"`
 }
 
+type ContainerRow struct {
+  ContainerID string
+  ImageName string
+  ContainerStatus string
+  ContainerPorts string
+  ContainerName string
+  DeviceUDID string
+}
+
 type ConfigValues struct {
 	DevicesList []struct {
 		AppiumPort      int    `json:"appium_port"`
@@ -162,15 +171,6 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
        fmt.Fprintf(w, "WDA Port: " + strconv.Itoa(devices.Devices[i].WdaPort) + "\n")
     }
   }
-}
-
-type ContainerRow struct {
-  ContainerID string
-  ImageName string
-  ContainerStatus string
-  ContainerPorts string
-  ContainerName string
-  DeviceUDID string
 }
 
 // Function that returns all current iOS device containers
