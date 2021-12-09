@@ -207,6 +207,7 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
   }
 }
 
+// Restart docker container
 func restartContainer(w http.ResponseWriter, r *http.Request){
   vars := mux.Vars(r)
   key := vars["container_id"]
@@ -225,11 +226,52 @@ func restartContainer(w http.ResponseWriter, r *http.Request){
   fmt.Println("The command output is: " + out.String())
 }
 
+// Load the initial page with the project configuration info
 func getInitialPage(w http.ResponseWriter, r *http.Request) {
+  // Open our jsonFile
+  jsonFile, err := os.Open("../configs/config.json")
+  // if we os.Open returns an error then handle it
+  if err != nil {
+    fmt.Println(err)
+  }
+  // defer the closing of our jsonFile so that we can parse it later on
+  defer jsonFile.Close()
+
+  byteValue, _ := ioutil.ReadAll(jsonFile)
+
+  // we initialize the devices array
+  var projectConfig ProjectConfig
+
+  // we unmarshal our byteArray which contains our
+  // jsonFile's content into 'users' which we defined above
+  json.Unmarshal(byteValue, &projectConfig)
+
+  var configRow = ProjectConfig{
+    DevicesHost: projectConfig.DevicesHost,
+    SeleniumHubHost: projectConfig.SeleniumHubHost,
+    SeleniumHubPort: projectConfig.SeleniumHubPort,
+    SeleniumHubProtocolType: projectConfig.SeleniumHubProtocolType,
+    WdaBundleID: projectConfig.WdaBundleID}
   var index = template.Must(template.ParseFiles("static/index.html"))
-  if err := index.Execute(w, nil); err != nil {
+  if err := index.Execute(w, configRow); err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
   }
+}
+
+func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
+  //vars := mux.Vars(r)
+  //key := vars["log_type"]
+  //key2 := vars["device_udid"]
+
+  //content, err := ioutil.ReadFile("../logs/container_" + key + "test")
+  content, err := ioutil.ReadFile("/Users/shabanovn/Desktop/long.txt")
+
+  if err != nil {
+    log.Fatal(err)
+  }
+
+  w.Header().Set("Content-Type", "text/plain")
+  fmt.Fprintf(w, string(content))
 }
 
 func handleRequests() {
@@ -243,6 +285,7 @@ func handleRequests() {
   myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
   myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
   myRouter.HandleFunc("/", getInitialPage)
+  myRouter.HandleFunc("/logs/{log_type}/{device_udid}", getDeviceLogs)
 
   // assets
   fs := http.FileServer(http.Dir("assets"))

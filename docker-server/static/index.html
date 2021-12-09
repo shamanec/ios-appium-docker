@@ -30,6 +30,22 @@
     body {
       text-align: center;
     }
+
+    table, td, th {
+      border: 1px solid #ddd;
+      text-align: center;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    th, td {
+      padding: 15px;
+    }
   </style>
 	<head>
 		<meta charset="UTF-8">
@@ -39,40 +55,41 @@
 	<body>
     <span>Welcome to the Appium Docker control page.<br/>Please select what you want to view:</span>
     <br></br>
-		<button class="indexPageButtons" id="androidContainersButton" onclick="openAndroidContainersPage(this);" style="margin:auto;">Android Containers</button>
+		<button class="indexPageButtons" id="androidContainersButton" onclick="location.href='/androidContainers';" style="margin:auto;">Android Containers</button>
     <br></br>
     <button class="indexPageButtons" id="iOSContainersButton" onclick="location.href='/iOSContainers';" style="margin:auto;">iOS Containers</button>
     <br></br>
     <button class="indexPageButtons" id="projectInfoButton" onclick="showProjectConfig()" style="margin:auto;">Configuration info</button>
     <br></br>
-    <span id="configurationInfoSpan" style="display:none;"></span>
+    <table id="configurationInfoTable" style="visibility:hidden;">
+      <tr>
+        <th>Devices Host</th>
+        <th>Selenium Hub Host</th>
+        <th>Selenium Hub Port</th>
+        <th>Selenium Hub Protocol Type</th>
+        <th>WDA Bundle ID</th>
+      </tr>
+      <tr>
+        <td>{{.DevicesHost}}</td>
+        <td>{{.SeleniumHubHost}}</td>
+        <td>{{.SeleniumHubPort}}</td>
+        <td>{{.SeleniumHubProtocolType}}</td>
+        <td>{{.WdaBundleID}}</td>
+      </tr>
+    </table>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	</body>
   <script>
     <!-- Show the configuration info -->
     function showProjectConfig() {
       <!-- Get the project config span element-->
-      var infoSpan = document.getElementById("configurationInfoSpan")
+      var infoSpan = document.getElementById("configurationInfoTable")
 
-      <!-- Call the endpoint that will get the device info -->
-      <!-- Then present the modal with the returned data -->
-      if (infoSpan.style.display === "none") {
-        $.ajax({
-          async: false,
-          dataType: "text",
-          type: "GET",
-          url: "/projectConfig",
-          success: function(data) {
-            <!-- Set the modal text -->
-            $('#configurationInfoSpan').html(data)
-          }
-        });
-      }
-      
-      if (infoSpan.style.display === "none") {
-        infoSpan.style.display = "block";
+      <!-- Present or hide the project config table when clicking -->
+      if (infoSpan.style.visibility === "hidden") {
+        infoSpan.style.visibility = "visible";
       } else {
-        infoSpan.style.display = "none";
+        infoSpan.style.visibility = "hidden";
       }
     }
   </script>
