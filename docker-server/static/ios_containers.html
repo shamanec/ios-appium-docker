@@ -175,10 +175,10 @@
 				<td>
 					<div>
 						<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);" value={{.DeviceUDID}}>Device Info</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this);" value={{.DeviceUDID}}>Container Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this);" value={{.DeviceUDID}}>Appium Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this);" value={{.DeviceUDID}}>WebDriverAgent Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this);" value={{.DeviceUDID}}>WDA Sync Logs</button>
+						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'containerLogs');" value={{.DeviceUDID}}>Container Logs</button>
+						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'appiumLogs');" value={{.DeviceUDID}}>Appium Logs</button>
+						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaLogs');" value={{.DeviceUDID}}>WebDriverAgent Logs</button>
+						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaSync');" value={{.DeviceUDID}}>WDA Sync Logs</button>
 					</div>
 				</td>
 				<td style="text-align:center;">
@@ -264,14 +264,14 @@
 		    }
 	    }
 
-      function getDeviceLogs(buttonObj) {
+      function getDeviceLogs(buttonObj, logType) {
         <!-- Get the device UDID that is in the value of the button -->
         var deviceUDID = buttonObj.value
         <!-- Call the endpoint that will get the chosen logs -->
 		    $.ajax({
 		      async: false,
 			    type: "GET",
-			    url: "/logs/" + "test" + "/" + deviceUDID,
+			    url: "/logs/" + logType + "/" + deviceUDID,
 			    success: function(data) {
 				    showInfoModal(data)
 			    }

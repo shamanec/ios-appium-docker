@@ -14,6 +14,7 @@ import (
     "html/template"
     "strings"
     "regexp"
+	"path/filepath"
 )
 
 // Devices struct which contains
@@ -176,8 +177,8 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request){
 // Function that returns all current iOS device containers
 func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Execute the command to get the current containers and get the output
-  //command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
-  command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
+  command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  //command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
   cmd := exec.Command("bash","-c",command_string)
   var out bytes.Buffer
   cmd.Stdout = &out
@@ -213,8 +214,6 @@ func restartContainer(w http.ResponseWriter, r *http.Request){
   key := vars["container_id"]
   // Execute the command to restart the container by container ID
   command_string := "docker restart " + key
-  //command_string := "ping -c 5 abv.bg"
-  //command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
   cmd := exec.Command("bash","-c",command_string)
   fmt.Println(string(key))
   var out bytes.Buffer
@@ -259,14 +258,16 @@ func getInitialPage(w http.ResponseWriter, r *http.Request) {
 }
 
 func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
-  //vars := mux.Vars(r)
-  //key := vars["log_type"]
-  //key2 := vars["device_udid"]
-
-  //content, err := ioutil.ReadFile("../logs/container_" + key + "test")
-  content, err := ioutil.ReadFile("/Users/shabanovn/Desktop/long.txt")
-
+  vars := mux.Vars(r)
+  key := vars["log_type"]
+  key2 := vars["device_udid"]
+  pattern := "../logs/*" + key2 + "/" + key + ".txt"
+  matches, err := filepath.Glob(pattern)
   if err != nil {
+     fmt.Println("Couldnt find file at path: " + pattern)
+   }
+   content, err := ioutil.ReadFile(matches[0])
+   if err != nil {
     log.Fatal(err)
   }
 
