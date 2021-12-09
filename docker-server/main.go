@@ -15,6 +15,9 @@ import (
     "strings"
     "regexp"
 	"path/filepath"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"context"
 )
 
 // Devices struct which contains
@@ -275,6 +278,22 @@ func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
   fmt.Fprintf(w, string(content))
 }
 
+func testDockerEngine(w http.ResponseWriter, r *http.Request) {
+  cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, container := range containers {
+		fmt.Fprintf(w, container.ID[:10] + container.Image)
+	}
+}
+
 func handleRequests() {
   // Create a new instance of the mux router
   myRouter := mux.NewRouter().StrictSlash(true)
@@ -287,6 +306,7 @@ func handleRequests() {
   myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
   myRouter.HandleFunc("/", getInitialPage)
   myRouter.HandleFunc("/logs/{log_type}/{device_udid}", getDeviceLogs)
+  myRouter.HandleFunc("/dockerengine", testDockerEngine) 
 
   // assets
   fs := http.FileServer(http.Dir("assets"))
