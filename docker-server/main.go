@@ -176,8 +176,8 @@ type ContainerRow struct {
 // Function that returns all current iOS device containers
 func getIOSContainers(w http.ResponseWriter, r *http.Request){
   // Execute the command to get the current containers and get the output
-  command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
-  //command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
+  //command_string := "docker ps -a --format '{{.ID}}*{{.Image}}*{{.Status}}*{{.Ports}}*{{.Names}}'"
+  command_string := "cat /Users/shabanovn/Desktop/test_containers.txt"
   cmd := exec.Command("bash","-c",command_string)
   var out bytes.Buffer
   cmd.Stdout = &out
@@ -201,7 +201,7 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request){
     // Append each struct object to the rows that will be displayed in the table
     rows = append(rows, container_row)
   }
-  var index = template.Must(template.ParseFiles("static/index.html"))
+  var index = template.Must(template.ParseFiles("static/ios_containers.html"))
   if err := index.Execute(w, rows); err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
   }
@@ -225,6 +225,13 @@ func restartContainer(w http.ResponseWriter, r *http.Request){
   fmt.Println("The command output is: " + out.String())
 }
 
+func getInitialPage(w http.ResponseWriter, r *http.Request) {
+  var index = template.Must(template.ParseFiles("static/main_page.html"))
+  if err := index.Execute(w, nil); err != nil {
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+  }
+}
+
 func handleRequests() {
   // Create a new instance of the mux router
   myRouter := mux.NewRouter().StrictSlash(true)
@@ -235,6 +242,7 @@ func handleRequests() {
   myRouter.HandleFunc("/iOSContainers", getIOSContainers)
   myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
   myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
+  myRouter.HandleFunc("/", getInitialPage)
 
   // assets
   fs := http.FileServer(http.Dir("assets"))
