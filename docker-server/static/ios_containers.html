@@ -28,7 +28,7 @@
   		border: none;
   		border-radius: 6px;
   		box-shadow: 0 3px #999;
-  		margin: 6px;
+  		margin: 8px;
   		padding: 2px 5px 2px 5px;
     }
 
@@ -139,13 +139,13 @@
     <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
 	</head>
 	<body>
-		<div id="loading">
-			<!-- <img id="loading-image" src="https://www.icegif.com/wp-content/uploads/loading-icegif-1.gif" alt="Loading..." /> -->
-      <img id="loading-image" href="/assets/images/ajax-loader.gif" alt="Loading..." />
-		</div>
+<!--		<div id="loading" class="hidden">-->
+<!--			&lt;!&ndash; <img id="loading-image" src="https://www.icegif.com/wp-content/uploads/loading-icegif-1.gif" alt="Loading..." /> &ndash;&gt;-->
+<!--      <img id="loading-image" href="/assets/images/ajax-loader.gif" alt="Loading..." />-->
+<!--		</div>-->
 		<div id="infoModal" class="modal">
 			<div class="modal-content">
-				<span class="close", style="position: absolute;left: 74%;top: 10;">&times;</span>
+				<span class="close">&times;</span>
         <!-- <span class="close fa fa-refresh", style="position: absolute;right: 74%;"></span> -->
 				<pre>
 					<div class="modal-body"></div>
@@ -167,12 +167,12 @@
 			</tr>
 			{{range .}}
 			<tr>
-				<td>{{.ContainerID}}</td>
-				<td>{{.ImageName}}</td>
-				<td>{{.ContainerStatus}}</td>
-				<td>{{.ContainerPorts}}</td>
-				<td>{{.ContainerName}}</td>
-				<td>
+				<td style="width: 100px">{{.ContainerID}}</td>
+				<td style="width: 125px">{{.ImageName}}</td>
+				<td style="width: 120px">{{.ContainerStatus}}</td>
+				<td style="width: 500px">{{.ContainerPorts}}</td>
+				<td style="width: 350px">{{.ContainerName}}</td>
+				<td style="width: 125px">
 					<div>
 						<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);" value={{.DeviceUDID}}>Device Info</button>
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'containerLogs');" value={{.DeviceUDID}}>Container Logs</button>
@@ -215,7 +215,7 @@
         var containerId = objButton.value
 
 		    <!-- Show loading indicator until response is returned -->
-		    $('#loading').show();
+		    // $('#loading').show();
 
 		    <!-- Call the endpoint that will restart the selected container -->
 		    $.ajax({
@@ -278,11 +278,5 @@
 		    });
       }
     </script>
-	<!-- Script that hides the loading indicator on page load -->
-	<script>
-		$(window).on('load', function () {
-			$('#loading').hide();
-		})
-	</script>
 	</body>
 </html>
