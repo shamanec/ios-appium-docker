@@ -5,9 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/client"
-	"github.com/gorilla/mux"
 	"html/template"
 	"io/ioutil"
 	"log"
@@ -18,6 +15,10 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/gorilla/mux"
 )
 
 // Devices struct which contains
@@ -176,8 +177,47 @@ func returnDeviceInfo(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// Function that returns all current iOS device containers
+// Function that returns all current iOS device containers and their info
 func getIOSContainers(w http.ResponseWriter, r *http.Request) {
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	if err != nil {
+		panic(err)
+	}
+
+	for _, container := range containers {
+		containerName := strings.Replace(container.Names[0], "/", "", -1)
+		containerPorts := ""
+		for i, s := range container.Ports {
+			if i > 0 {
+				containerPorts += "\n"
+			}
+			containerPorts += "{" + s.IP + ", " + strconv.Itoa(int(s.PrivatePort)) + ", " + strconv.Itoa(int(s.PublicPort)) + ", " + s.Type + "}"
+		}
+		// Define the rows that will be built for the struct used by the template for the table
+		var rows []ContainerRow
+		re := regexp.MustCompile("[^-]*$")
+		match := re.FindStringSubmatch(containerName)
+		// Create a struct object for the respective container using the parameters by the above split
+		var containerRow = ContainerRow{ContainerID: container.ID, ImageName: container.Image, ContainerStatus: container.Status, ContainerPorts: containerPorts, ContainerName: containerName, DeviceUDID: match[0]}
+		// Append each struct object to the rows that will be displayed in the table
+		rows = append(rows, containerRow)
+		var index = template.Must(template.ParseFiles("static/ios_containers.html"))
+		if err := index.Execute(w, rows); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
+// Function that returns all current iOS device containers and their info
+func getContainerLogs(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	// key := vars["container_id"]
+
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)

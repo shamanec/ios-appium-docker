@@ -191,13 +191,13 @@
 			</table>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-      <!-- Presents modal with the devices info parsed from the config.json -->
+      /* Presents modal with the devices info parsed from the config.json */
       function showDeviceInfo(objButton) {
-        <!-- Get the device UDID that is in the value of the 'Device Info' button -->
+        /* Get the device UDID that is in the value of the 'Device Info' button */
         var udidFromButton = objButton.value
 
-        <!-- Call the endpoint that will get the device info -->
-        <!-- Then present the modal with the returned data -->
+        /* Call the endpoint that will get the device info */
+        /* Then present the modal with the returned data */
 		    $.ajax({
 		      async: false,
 			    dataType: "text",
@@ -209,15 +209,15 @@
 		    });
       }
 
-      <!-- Restart container when clicking on the 'Restart container' button for the row -->
+      /* Restart container when clicking on the 'Restart container' button for the row */
 	    function restartContainer(objButton) {
-		    <!-- Get the container ID that is in the value of the 'Restart container' button -->
+		    /* Get the container ID that is in the value of the 'Restart container' button */
         var containerId = objButton.value
 
-		    <!-- Show loading indicator until response is returned -->
+		    /* Show loading indicator until response is returned */
 		    // $('#loading').show();
 
-		    <!-- Call the endpoint that will restart the selected container -->
+		    /* Call the endpoint that will restart the selected container */
 		    $.ajax({
 		      async: false,
 			    type: "GET",
@@ -227,36 +227,36 @@
 			    }
 		    });
 
-		    <!-- Hide the loading after response is returned -->
+		    /* Hide the loading after response is returned */
 		    $('#loading').hide();
 
-		    <!-- Present an informational alert that the container restart attempt was finished and the ID -->
+		    /* Present an informational alert that the container restart attempt was finished and the ID */
 		    alert("Finished restart attempt on container with ID: " + containerId)
 
-		    <!-- Reload the page to get the latest info -->
-      	location.reload();
+		    /* Reload the page to get the latest info */
+      		location.reload();
       }
 
-	    <!-- Show info modal with provided text -->
+	    /* Show info modal with provided text */
 	    function showInfoModal(modalText) {
-		    <!-- Get the modal element-->
+		    /* Get the modal element */
 		    var modal = document.getElementById("infoModal")
 
-		    <!-- Get the close button -->
+		    /* Get the close button */
 		    var span = document.getElementsByClassName("close")[0]
 
-		    <!-- Set the modal text -->
+		    /* Set the modal text */
 		    $('.modal-body').html(modalText)
 
-		    <!-- Display the modal blocking interaction -->
+		    /* Display the modal blocking interaction */
 		    modal.style.display = "block";
 
-		    <!-- Close the modal if you click on close button -->
+		    /* Close the modal if you click on close button */
 		    span.onclick = function() {
 			    modal.style.display = "none";
 		    }
 
-		    <!-- Close the modal if you click anywhere outside the modal -->
+		    /* Close the modal if you click anywhere outside the modal */
 		    window.onclick = function(event) {
 			    if (event.target == modal) {
 				    modal.style.display = "none";
@@ -265,9 +265,9 @@
 	    }
 
       function getDeviceLogs(buttonObj, logType) {
-        <!-- Get the device UDID that is in the value of the button -->
+        /* Get the device UDID that is in the value of the button */
         var deviceUDID = buttonObj.value
-        <!-- Call the endpoint that will get the chosen logs -->
+        /* Call the endpoint that will get the chosen logs */
 		    $.ajax({
 		      async: false,
 			    type: "GET",
