@@ -69,7 +69,9 @@
 
 	  #loading {
   		position: fixed;
-  		display: block;
+  		display: flex;
+		align-items: center;
+		justify-content: center;
   		width: 100%;
   		height: 100%;
   		top: 0;
@@ -81,7 +83,7 @@
 	  }
 
 	  #loading-image {
-		  position: center;
+		  position:relative;
 	  }
 
     .hidden {
@@ -137,17 +139,14 @@
 		<meta charset="UTF-8">
 		<title>iOS Containers Info</title>
     <link rel="stylesheet" href="/assets/styles.css" />
-    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
 	</head>
 	<body>
-<!--		<div id="loading" class="hidden">-->
-<!--			&lt;!&ndash; <img id="loading-image" src="https://www.icegif.com/wp-content/uploads/loading-icegif-1.gif" alt="Loading..." /> &ndash;&gt;-->
-<!--      <img id="loading-image" href="/assets/images/ajax-loader.gif" alt="Loading..." />-->
-<!--		</div>-->
+		<div id="loading" style="visibility: hidden">
+			<img id="loading-image" src="/assets/images/loader.gif">
+		</div>
 		<div id="infoModal" class="modal">
 			<div class="modal-content">
 				<span class="close">&times;</span>
-        <!-- <span class="close fa fa-refresh", style="position: absolute;right: 74%;"></span> -->
 				<pre>
 					<div class="modal-body"></div>
 				</pre>
@@ -168,12 +167,12 @@
 			</tr>
 			{{range .}}
 			<tr>
-				<td style="width: 100px">{{.ContainerID}}</td>
-				<td style="width: 125px">{{.ImageName}}</td>
-				<td style="width: 120px">{{.ContainerStatus}}</td>
-				<td style="width: 500px">{{.ContainerPorts}}</td>
-				<td style="width: 350px">{{.ContainerName}}</td>
-				<td style="width: 125px">
+				<td>{{.ContainerID}}</td>
+				<td style="width: 125px;">{{.ImageName}}</td>
+				<td style="width: 120px;">{{.ContainerStatus}}</td>
+				<td style="width: 700px;font-size: 15px"><pre>{{.ContainerPorts}}</pre></td>
+				<td style="width: 350px;">{{.ContainerName}}</td>
+				<td style="width: 125px;">
 					<div>
 						<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);" value={{.DeviceUDID}}>Device Info</button>
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getContainerLogs(this);" value={{.ContainerID}}>Container Logs</button>
@@ -182,7 +181,7 @@
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaSync');" value={{.DeviceUDID}}>WDA Sync Logs</button>
 					</div>
 				</td>
-				<td style="text-align:center;">
+				<td style="text-align:center; width: 125px;">
 					<div>
 						<button class="clsRestartButton" id="restartContainerButton" onclick="restartContainer(this);" value={{.ContainerID}}>Restart container</button>
 					</div>
@@ -216,7 +215,7 @@
         var containerId = objButton.value
 
 		    /* Show loading indicator until response is returned */
-		    // $('#loading').show();
+		    $('#loading').css("visibility", "visible");
 
 		    /* Call the endpoint that will restart the selected container */
 		    $.ajax({
@@ -229,7 +228,7 @@
 		    });
 
 		    /* Hide the loading after response is returned */
-		    $('#loading').hide();
+		    $('#loading').css("visibility", "hidden");
 
 		    /* Present an informational alert that the container restart attempt was finished and the ID */
 		    alert("Finished restart attempt on container with ID: " + containerId)

@@ -10,7 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -168,13 +167,18 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
+	// Get the current containers list
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
 	if err != nil {
 		panic(err)
 	}
 
+	// Loop through the containers list
 	for _, container := range containers {
+		// Parse plain container name
 		containerName := strings.Replace(container.Names[0], "/", "", -1)
+
+		// Get all the container ports from the returned array into string
 		containerPorts := ""
 		for i, s := range container.Ports {
 			if i > 0 {
@@ -184,12 +188,17 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 		}
 		// Define the rows that will be built for the struct used by the template for the table
 		var rows []ContainerRow
+
+		// Extract the device UDID from the container name
 		re := regexp.MustCompile("[^-]*$")
 		match := re.FindStringSubmatch(containerName)
+
 		// Create a struct object for the respective container using the parameters by the above split
 		var containerRow = ContainerRow{ContainerID: container.ID, ImageName: container.Image, ContainerStatus: container.Status, ContainerPorts: containerPorts, ContainerName: containerName, DeviceUDID: match[0]}
 		// Append each struct object to the rows that will be displayed in the table
 		rows = append(rows, containerRow)
+
+		// Parse the template and return response with the container table rows
 		var index = template.Must(template.ParseFiles("static/ios_containers.html"))
 		if err := index.Execute(w, rows); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -227,17 +236,16 @@ func getContainerLogs(w http.ResponseWriter, r *http.Request) {
 func restartContainer(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["container_id"]
-	// Execute the command to restart the container by container ID
-	commandString := "docker restart " + key
-	cmd := exec.Command("bash", "-c", commandString)
-	fmt.Println(key)
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	fmt.Println("The command output is: " + out.String())
+
+	if err := cli.ContainerRestart(ctx, key, nil); err != nil {
+		log.Printf("Unable to restart container %s: %s", key, err)
+	}
 }
 
 // Load the initial page with the project configuration info
@@ -272,20 +280,29 @@ func getInitialPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Get the respective device logs based on log type
 func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
+	// Get the parameters
 	vars := mux.Vars(r)
 	key := vars["log_type"]
 	key2 := vars["device_udid"]
+
+	// Create a pattern for the searched file
 	pattern := "../logs/*" + key2 + "/" + key + ".txt"
+
+	// Check if the file exists
 	matches, err := filepath.Glob(pattern)
 	if err != nil {
 		fmt.Println("Couldnt find file at path: " + pattern)
 	}
+
+	// Read the file content
 	content, err := ioutil.ReadFile(matches[0])
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// Respond with the file content in plain text
 	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, string(content))
 }
@@ -300,13 +317,13 @@ func handleRequests() {
 	myRouter.HandleFunc("/iOSContainers", getIOSContainers)
 	myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
 	myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
-	myRouter.HandleFunc("/", getInitialPage)
 	myRouter.HandleFunc("/deviceLogs/{log_type}/{device_udid}", getDeviceLogs)
 	myRouter.HandleFunc("/containerLogs/{container_id}", getContainerLogs)
-
 	// assets
-	fs := http.FileServer(http.Dir("assets"))
-	myRouter.Handle("/assets/", http.StripPrefix("/assets/", fs))
+	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
+
+	myRouter.HandleFunc("/", getInitialPage)
+
 	// finally, instead of passing in nil, we want
 	// to pass in our newly created router as the second
 	// argument
