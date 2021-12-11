@@ -52,7 +52,7 @@ start_container() {
     -v "$(pwd)"/DeveloperDiskImages/DeviceSupport:/opt/DeveloperDiskImages \
     -v "$(pwd)"/ipa:/opt/ipa \
     -v "$(pwd)/logs/container_$deviceName-$device_udid":/opt/logs \
-    ios-appium >>"logs/container_$deviceName-$device_udid/containerLogs.txt" 2>&1 &
+    ios-appium 2>&1 &
 }
 
 start_service() {

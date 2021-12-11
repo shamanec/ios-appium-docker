@@ -1,296 +1,364 @@
 <!DOCTYPE html>
 <html>
-  <style>
-    table, td, th {
-      border: 1px solid #ddd;
-      text-align: center;
-    }
+<style>
+	table,
+	td,
+	th {
+		border: 1px solid #ddd;
+		text-align: center;
+	}
 
-    table {
-      border-collapse: collapse;
-      width: 100%;
-    }
+	table {
+		border-collapse: collapse;
+		width: 100%;
+	}
 
-    th, td {
-      padding: 15px;
-    }
+	th,
+	td {
+		padding: 15px;
+	}
 
-    .clsInfoButtons {
-  	  display: inline-block;
-  	  display: grid;
-  		gap: 10px;
-  		font-size: 14px;
-  		cursor: pointer;
-  		text-align: center;
-  		text-decoration: none;
-  		color: #fff;
-  		background-color: #4CAF50;
-  		border: none;
-  		border-radius: 6px;
-  		box-shadow: 0 3px #999;
-  		margin: 8px;
-  		padding: 2px 5px 2px 5px;
-    }
+	.clsInfoButtons {
+		display: inline-block;
+		display: grid;
+		gap: 10px;
+		font-size: 14px;
+		cursor: pointer;
+		text-align: center;
+		text-decoration: none;
+		color: #fff;
+		background-color: #4CAF50;
+		border: none;
+		border-radius: 6px;
+		box-shadow: 0 3px #999;
+		margin: 8px;
+		padding: 2px 5px 2px 5px;
+	}
 
-	  .clsInfoButtons:hover {
-	    background-color: #3e8e41
-	  }
+	.clsInfoButtons:hover {
+		background-color: #3e8e41
+	}
 
-	  .clsInfoButtons:active {
-  		background-color: #3e8e41;
-  		box-shadow: 0 5px #666;
-  		transform: translateY(4px);
-	  }
+	.clsInfoButtons:active {
+		background-color: #3e8e41;
+		box-shadow: 0 5px #666;
+		transform: translateY(4px);
+	}
 
-	  .clsRestartButton {
-  		font-size: 14px;
-  		cursor: pointer;
-  		text-align: center;
-  		text-decoration: none;
-  		color: #fff;
-  		background-color: #da492a;
-  		border: none;
-  		border-radius: 6px;
-  		box-shadow: 0 3px #999;
-  		margin: 8px;
-  		padding: 2px 5px 2px 5px;
-  		width: 80px;
-    }
+	.clsRestartButton {
+		font-size: 14px;
+		cursor: pointer;
+		text-align: center;
+		text-decoration: none;
+		color: #fff;
+		background-color: #da492a;
+		border: none;
+		border-radius: 6px;
+		box-shadow: 0 3px #999;
+		margin: 8px;
+		padding: 2px 5px 2px 5px;
+		width: 80px;
+	}
 
-	  .clsRestartButton:hover {
-	    background-color: #da322a
-	  }
+	.clsRestartButton:hover {
+		background-color: #da322a
+	}
 
-	  .clsRestartButton:active {
-  		background-color: #da492a;
-  		box-shadow: 0 5px #666;
-  		transform: translateY(4px);
-	  }
+	.clsRestartButton:active {
+		background-color: #da492a;
+		box-shadow: 0 5px #666;
+		transform: translateY(4px);
+	}
 
-	  #loading {
-  		position: fixed;
-  		display: flex;
+	#loading {
+		position: fixed;
+		display: flex;
 		align-items: center;
 		justify-content: center;
-  		width: 100%;
-  		height: 100%;
-  		top: 0;
-  		left: 0;
-  		text-align: center;
-  		opacity: 0.7;
-  		background-color: #fff;
-  		z-index: 99;
-	  }
+		width: 100%;
+		height: 100%;
+		top: 0;
+		left: 0;
+		text-align: center;
+		opacity: 0.7;
+		background-color: #fff;
+		z-index: 99;
+	}
 
-	  #loading-image {
-		  position:relative;
-	  }
+	#loading-image {
+		position: relative;
+	}
 
-    .hidden {
-      display: none;
-    }
+	.hidden {
+		display: none;
+	}
 
-	  .modal {
-  		display: none; /* Hidden by default */
-  		position: fixed; /* Stay in place */
-  		z-index: 1; /* Sit on top */
-  		padding-top: 100px; /* Location of the box */
-  		left: 0;
-  		top: 0;
-  		width: 100%; /* Full width */
-  		height: 100%; /* Full height */
-  		background-color: rgb(0,0,0); /* Fallback color */
-  		background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-      table-layout: fixed;
-      word-wrap: break-word;
-	  }
+	.modal {
+		display: none;
+		z-index: 1;
+		position: fixed;
+		width: 100%;
+		height: 100%;
+		background-color: rgb(0, 0, 0);
+		background-color: rgba(0, 0, 0, 0.4);
+		overflow: inherit;
+		overflow-y: inherit;
+		text-align: center;
+		word-wrap: break-word;
+	}
 
-	  .modal-content {
-  		background-color: #fefefe;
-  		margin: auto;
-  		padding: 20px;
-  		border: 1px solid #888;
-  		width: 50%;
-      height: 60%;
-      table-layout: fixed;
-      overflow: scroll;
-	  }
+	.modal:before {
+		content: '';
+		display: inline-block;
+		height: 100%;
+		vertical-align: middle;
+		margin-right: -4px;
+	}
 
-    .modal-body {
-      white-space: pre-wrap;
-    }
+	.modal-dialog {
+		padding: 0;
+		display: inline-block;
+		text-align: left;
+		vertical-align: middle;
+		width: 50%;
+		height: 60%;
+	}
 
-	  .close {
-  		color: #000000;
-  		float: right;
-  		font-size: 28px;
-  		font-weight: bold;
-		position: absolute;
-	  }
+	.modal-content {
 
-	  .close:hover,
-		.close:focus {
-  		color: #807474;
-  		text-decoration: none;
-  		cursor: pointer;
-	  }
-  </style>
-	<head>
-		<meta charset="UTF-8">
-		<title>iOS Containers Info</title>
-    <link rel="stylesheet" href="/assets/styles.css" />
-	</head>
-	<body>
-		<div id="loading" style="visibility: hidden">
-			<img id="loading-image" src="/assets/images/loader.gif">
-		</div>
-		<div id="infoModal" class="modal">
+		border: 1;
+		border-radius: 0;
+		background-color: #fefefe;
+
+	}
+
+	.modal-header {
+		border: 1;
+		padding: 0;
+		position: relative;
+	}
+
+	.modal-content p {
+		padding: 0 20px;
+	}
+
+	.modal-body {
+		padding: 10px 10px 10px 10px;
+		height: 450px;
+		overflow: auto;
+		border-top: 1px solid #000;
+		border-right: 1px solid #000;
+		border-left: 1px solid #000;
+	}
+
+	.modal-footer {
+		border-bottom: 1px solid #000;
+		border-right: 1px solid #000;
+		border-left: 1px solid #000;
+		background-color: #fefefe;
+		height: 40px;
+	}
+</style>
+
+<head>
+	<meta charset="UTF-8">
+	<title>iOS Containers Info</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+	<div id="loading" style="visibility: hidden">
+		<img id="loading-image" src="/assets/images/loader.gif">
+	</div>
+	<!-- <div id="infoModal" class="modal">
 			<div class="modal-content">
-				<span class="close">&times;</span>
+				<div class="modal-header"> Logs
+					<button class="modalRefresh fa">&#xf021;</button>
+					<button class="close fa">&times;</button>
+				</div>
 				<pre>
 					<div class="modal-body"></div>
 				</pre>
 			</div>
+		</div> -->
+	<!-- Modal -->
+	<div class="modal fade" id="deviceLogsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<pre>
+					<div class="modal-body"></div>
+				</pre>
+					<div class="modal-footer">
+					<button style="font-size:18px;height:26px;margin-left: 7px;margin-top: 7px;" type="button" class="close btn btn-default" data-dismiss="modal">Close</button>
+					<button id="refreshLogsButton" onclick="refreshLogs(this);" style="font-size:20px;height:26px;margin-top: 7px;" class="fa fa-refresh">Refresh logs</button>
+				</div>
+				  </div>
+			</div>
 		</div>
+	</div>
+	<table>
+		<button class="clsInfoButtons" id="homeButton" onclick="location.href='/';">Home</button>
+		<tr>
+			<th>ContainerID</th>
+			<th>Image Name</th>
+			<th>Container Status</th>
+			<th>Container Ports</th>
+			<th>Container Name</th>
+			<th>Additional info</th>
+			<th>Actions</th>
+		</tr>
+		{{range .}}
+		<tr>
+			<td>{{.ContainerID}}</td>
+			<td style="width: 125px;">{{.ImageName}}</td>
+			<td style="width: 120px;">{{.ContainerStatus}}</td>
+			<td style="width: 700px;font-size: 15px">
+				<pre>{{.ContainerPorts}}</pre>
+			</td>
+			<td style="width: 350px;">{{.ContainerName}}</td>
+			<td style="width: 125px;">
+				<div>
+					<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);"
+						value={{.DeviceUDID}}>Device Info</button>
+					<button class="clsInfoButtons" id="containerLogsButton" onclick="getContainerLogs(this);"
+						value={{.ContainerID}}>Container Logs</button>
+					<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'appiumLogs');"
+						value={{.DeviceUDID}}>Appium Logs</button>
+					<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaLogs');"
+						value={{.DeviceUDID}}>WebDriverAgent Logs</button>
+					<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaSync');"
+						value={{.DeviceUDID}}>WDA Sync Logs</button>
+				</div>
+			</td>
+			<td style="text-align:center; width: 125px;">
+				<div>
+					<button class="clsRestartButton" id="restartContainerButton" onclick="restartContainer(this);"
+						value={{.ContainerID}}>Restart container</button>
+				</div>
+			</td>
+		</tr>
+		{{end}}
+	</table>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		/* Presents modal with the devices info parsed from the config.json */
+		function showDeviceInfo(objButton) {
+			/* Get the device UDID that is in the value of the 'Device Info' button */
+			var udidFromButton = objButton.value
 
-		</div>
-			<table>
-        <button class="clsInfoButtons" id="homeButton" onclick="location.href='/';">Home</button>
-				<tr>
-					<th>ContainerID</th>
-					<th>Image Name</th>
-					<th>Container Status</th>
-					<th>Container Ports</th>
-					<th>Container Name</th>
-					<th>Additional info</th>
-					<th>Actions</th>
-			</tr>
-			{{range .}}
-			<tr>
-				<td>{{.ContainerID}}</td>
-				<td style="width: 125px;">{{.ImageName}}</td>
-				<td style="width: 120px;">{{.ContainerStatus}}</td>
-				<td style="width: 700px;font-size: 15px"><pre>{{.ContainerPorts}}</pre></td>
-				<td style="width: 350px;">{{.ContainerName}}</td>
-				<td style="width: 125px;">
-					<div>
-						<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);" value={{.DeviceUDID}}>Device Info</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getContainerLogs(this);" value={{.ContainerID}}>Container Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'appiumLogs');" value={{.DeviceUDID}}>Appium Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaLogs');" value={{.DeviceUDID}}>WebDriverAgent Logs</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaSync');" value={{.DeviceUDID}}>WDA Sync Logs</button>
-					</div>
-				</td>
-				<td style="text-align:center; width: 125px;">
-					<div>
-						<button class="clsRestartButton" id="restartContainerButton" onclick="restartContainer(this);" value={{.ContainerID}}>Restart container</button>
-					</div>
-				</td>
-			</tr>
-			{{end}}
-			</table>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script>
-      /* Presents modal with the devices info parsed from the config.json */
-      function showDeviceInfo(objButton) {
-        /* Get the device UDID that is in the value of the 'Device Info' button */
-        var udidFromButton = objButton.value
+			/* Call the endpoint that will get the device info */
+			/* Then present the modal with the returned data */
+			$.ajax({
+				async: false,
+				dataType: "text",
+				type: "GET",
+				url: "/device/" + udidFromButton,
+				success: function (data) {
+					showInfoModal(data);
+				}
+			});
+		}
 
-        /* Call the endpoint that will get the device info */
-        /* Then present the modal with the returned data */
-		    $.ajax({
-		      async: false,
-			    dataType: "text",
-			    type: "GET",
-			    url: "/device/" + udidFromButton,
-			    success: function(data) {
-				    showInfoModal(data);
-			    }
-		    });
-      }
+		/* Restart container when clicking on the 'Restart container' button for the row */
+		function restartContainer(objButton) {
+			/* Get the container ID that is in the value of the 'Restart container' button */
+			var containerId = objButton.value
 
-      /* Restart container when clicking on the 'Restart container' button for the row */
-	    function restartContainer(objButton) {
-		    /* Get the container ID that is in the value of the 'Restart container' button */
-        var containerId = objButton.value
+			/* Show loading indicator until response is returned */
+			$('#loading').css("visibility", "visible");
 
-		    /* Show loading indicator until response is returned */
-		    $('#loading').css("visibility", "visible");
+			/* Call the endpoint that will restart the selected container */
+			$.ajax({
+				async: false,
+				type: "GET",
+				url: "/restartContainer/" + containerId,
+				success: function (data) {
+					$('.targeted').html(data);
+				}
+			});
 
-		    /* Call the endpoint that will restart the selected container */
-		    $.ajax({
-		      async: false,
-			    type: "GET",
-			    url: "/restartContainer/" + containerId,
-			    success: function(data) {
-				    $('.targeted').html(data);
-			    }
-		    });
+			/* Hide the loading after response is returned */
+			$('#loading').css("visibility", "hidden");
 
-		    /* Hide the loading after response is returned */
-		    $('#loading').css("visibility", "hidden");
+			/* Present an informational alert that the container restart attempt was finished and the ID */
+			alert("Finished restart attempt on container with ID: " + containerId)
 
-		    /* Present an informational alert that the container restart attempt was finished and the ID */
-		    alert("Finished restart attempt on container with ID: " + containerId)
+			/* Reload the page to get the latest info */
+			location.reload();
+		}
 
-		    /* Reload the page to get the latest info */
-      		location.reload();
-      }
+		/* Show info modal with provided text */
+		function showInfoModal(modalText) {
+			/* Get the modal element */
+			var modal = document.getElementById("deviceLogsModal")
 
-	    /* Show info modal with provided text */
-	    function showInfoModal(modalText) {
-		    /* Get the modal element */
-		    var modal = document.getElementById("infoModal")
+			/* Get the close button */
+			var span = document.getElementsByClassName("close")[0]
 
-		    /* Get the close button */
-		    var span = document.getElementsByClassName("close")[0]
+			/* Set the modal text */
+			$('.modal-body').html(modalText)
 
-		    /* Set the modal text */
-		    $('.modal-body').html(modalText)
+			/* Display the modal blocking interaction */
+			modal.style.display = "block";
 
-		    /* Display the modal blocking interaction */
-		    modal.style.display = "block";
+			/* Close the modal if you click on close button */
+			span.onclick = function () {
+				modal.style.display = "none";
+			}
 
-		    /* Close the modal if you click on close button */
-		    span.onclick = function() {
-			    modal.style.display = "none";
-		    }
+			/* Close the modal if you click anywhere outside the modal */
+			window.onclick = function (event) {
+				if (event.target == modal) {
+					modal.style.display = "none";
+				}
+			}
+		}
 
-		    /* Close the modal if you click anywhere outside the modal */
-		    window.onclick = function(event) {
-			    if (event.target == modal) {
-				    modal.style.display = "none";
-			    }
-		    }
-	    }
+		function getDeviceLogs(buttonObj, logType) {
+			/* Get the device UDID that is in the value of the button */
+			var deviceUDID = buttonObj.value
 
-      function getDeviceLogs(buttonObj, logType) {
-        /* Get the device UDID that is in the value of the button */
-        var deviceUDID = buttonObj.value
-        /* Call the endpoint that will get the chosen logs */
-		    $.ajax({
-		      async: false,
-			    type: "GET",
-			    url: "/deviceLogs/" + logType + "/" + deviceUDID,
-			    success: function(data) {
-				    showInfoModal(data)
-			    }
-		    });
-      }
+			var url = "/deviceLogs/" + logType + "/" + deviceUDID
+			var refreshButton = document.getElementById("refreshLogsButton")
+			refreshButton.value = url
+			/* Call the endpoint that will get the chosen logs */
+			$.ajax({
+				async: false,
+				type: "GET",
+				url: "/deviceLogs/" + logType + "/" + deviceUDID,
+				success: function (data) {
+					showInfoModal(data)
+				}
+			});
+		}
 
-	  function getContainerLogs(buttonObj) {
-        /* Get the container ID that is in the value of the button */
-        var containerID = buttonObj.value
-        /* Call the endpoint that will get the container logs */
-		    $.ajax({
-		      async: false,
-			    type: "GET",
-			    url: "/containerLogs/" + containerID,
-			    success: function(data) {
-				    showInfoModal(data)
-			    }
-		    });
-      }
-    </script>
-	</body>
+		function getContainerLogs(buttonObj) {
+			/* Get the container ID that is in the value of the button */
+			var containerID = buttonObj.value
+			/* Call the endpoint that will get the container logs */
+			$.ajax({
+				async: false,
+				type: "GET",
+				url: "/containerLogs/" + containerID,
+				success: function (data) {
+					showInfoModal(data)
+				}
+			});
+		}
+
+		function refreshLogs(buttonObj) {
+			var refreshButton = document.getElementById("refreshLogsButton")
+			$.ajax({
+				async: false,
+				type: "GET",
+				url: refreshButton.value,
+				success: function (data) {
+					/* Set the modal text */
+					$('.modal-body').html(data)
+				}
+			});
+		}
+	</script>
+</body>
+
 </html>

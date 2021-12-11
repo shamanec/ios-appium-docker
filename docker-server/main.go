@@ -210,6 +210,7 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 func getContainerLogs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["container_id"]
+	w.Header().Set("Content-Type", "text/plain")
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -228,7 +229,6 @@ func getContainerLogs(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(out)
 	newStr := buf.String()
 
-	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, newStr)
 }
 
