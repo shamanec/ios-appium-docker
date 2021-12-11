@@ -55,22 +55,6 @@ type ContainerRow struct {
 	DeviceUDID      string
 }
 
-type ConfigValues struct {
-	DevicesList []struct {
-		AppiumPort      int    `json:"appium_port"`
-		DeviceName      string `json:"device_name"`
-		DeviceOsVersion string `json:"device_os_version"`
-		DeviceUdid      string `json:"device_udid"`
-		WdaMjpegPort    int    `json:"wda_mjpeg_port"`
-		WdaPort         int    `json:"wda_port"`
-	} `json:"devicesList"`
-	DevicesHost             string `json:"devices_host"`
-	SeleniumHubHost         string `json:"selenium_hub_host"`
-	SeleniumHubPort         string `json:"selenium_hub_port"`
-	SeleniumHubProtocolType string `json:"selenium_hub_protocol_type"`
-	WdaBundleID             string `json:"wda_bundle_id"`
-}
-
 // Function that returns the full list of devices from config.json and their data
 func getDevicesList(w http.ResponseWriter, r *http.Request) {
 	// Open our jsonFile
@@ -215,41 +199,28 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 
 // Function that returns all current iOS device containers and their info
 func getContainerLogs(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// key := vars["container_id"]
+	vars := mux.Vars(r)
+	key := vars["container_id"]
 
-	cli, err := client.NewClientWithOpts(client.FromEnv)
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		panic(err)
 	}
 
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	options := types.ContainerLogsOptions{ShowStdout: true}
+	// Replace this ID with a container that really exists
+	out, err := cli.ContainerLogs(ctx, key, options)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, container := range containers {
-		containerName := strings.Replace(container.Names[0], "/", "", -1)
-		containerPorts := ""
-		for i, s := range container.Ports {
-			if i > 0 {
-				containerPorts += "\n"
-			}
-			containerPorts += "{" + s.IP + ", " + strconv.Itoa(int(s.PrivatePort)) + ", " + strconv.Itoa(int(s.PublicPort)) + ", " + s.Type + "}"
-		}
-		// Define the rows that will be built for the struct used by the template for the table
-		var rows []ContainerRow
-		re := regexp.MustCompile("[^-]*$")
-		match := re.FindStringSubmatch(containerName)
-		// Create a struct object for the respective container using the parameters by the above split
-		var containerRow = ContainerRow{ContainerID: container.ID, ImageName: container.Image, ContainerStatus: container.Status, ContainerPorts: containerPorts, ContainerName: containerName, DeviceUDID: match[0]}
-		// Append each struct object to the rows that will be displayed in the table
-		rows = append(rows, containerRow)
-		var index = template.Must(template.ParseFiles("static/ios_containers.html"))
-		if err := index.Execute(w, rows); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(out)
+	newStr := buf.String()
+
+	w.Header().Set("Content-Type", "text/plain")
+	fmt.Fprintf(w, newStr)
 }
 
 // Restart docker container
@@ -330,7 +301,8 @@ func handleRequests() {
 	myRouter.HandleFunc("/device/{device_udid}", returnDeviceInfo)
 	myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
 	myRouter.HandleFunc("/", getInitialPage)
-	myRouter.HandleFunc("/logs/{log_type}/{device_udid}", getDeviceLogs)
+	myRouter.HandleFunc("/deviceLogs/{log_type}/{device_udid}", getDeviceLogs)
+	myRouter.HandleFunc("/containerLogs/{container_id}", getContainerLogs)
 
 	// assets
 	fs := http.FileServer(http.Dir("assets"))

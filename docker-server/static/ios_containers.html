@@ -123,6 +123,7 @@
   		float: right;
   		font-size: 28px;
   		font-weight: bold;
+		position: absolute;
 	  }
 
 	  .close:hover,
@@ -175,7 +176,7 @@
 				<td style="width: 125px">
 					<div>
 						<button class="clsInfoButtons" id="clsInfoButton" onclick="showDeviceInfo(this);" value={{.DeviceUDID}}>Device Info</button>
-						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'containerLogs');" value={{.DeviceUDID}}>Container Logs</button>
+						<button class="clsInfoButtons" id="containerLogsButton" onclick="getContainerLogs(this);" value={{.ContainerID}}>Container Logs</button>
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'appiumLogs');" value={{.DeviceUDID}}>Appium Logs</button>
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaLogs');" value={{.DeviceUDID}}>WebDriverAgent Logs</button>
 						<button class="clsInfoButtons" id="containerLogsButton" onclick="getDeviceLogs(this, 'wdaSync');" value={{.DeviceUDID}}>WDA Sync Logs</button>
@@ -271,7 +272,21 @@
 		    $.ajax({
 		      async: false,
 			    type: "GET",
-			    url: "/logs/" + logType + "/" + deviceUDID,
+			    url: "/deviceLogs/" + logType + "/" + deviceUDID,
+			    success: function(data) {
+				    showInfoModal(data)
+			    }
+		    });
+      }
+
+	  function getContainerLogs(buttonObj) {
+        /* Get the container ID that is in the value of the button */
+        var containerID = buttonObj.value
+        /* Call the endpoint that will get the container logs */
+		    $.ajax({
+		      async: false,
+			    type: "GET",
+			    url: "/containerLogs/" + containerID,
 			    success: function(data) {
 				    showInfoModal(data)
 			    }
