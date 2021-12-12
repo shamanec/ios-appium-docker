@@ -164,10 +164,13 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get the current containers list
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{})
+	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{All: true})
 	if err != nil {
 		panic(err)
 	}
+
+	// Define the rows that will be built for the struct used by the template for the table
+	var rows []ContainerRow
 
 	// Loop through the containers list
 	for _, container := range containers {
@@ -182,8 +185,6 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 			}
 			containerPorts += "{" + s.IP + ", " + strconv.Itoa(int(s.PrivatePort)) + ", " + strconv.Itoa(int(s.PublicPort)) + ", " + s.Type + "}"
 		}
-		// Define the rows that will be built for the struct used by the template for the table
-		var rows []ContainerRow
 
 		// Extract the device UDID from the container name
 		re := regexp.MustCompile("[^-]*$")
@@ -193,12 +194,11 @@ func getIOSContainers(w http.ResponseWriter, r *http.Request) {
 		var containerRow = ContainerRow{ContainerID: container.ID, ImageName: container.Image, ContainerStatus: container.Status, ContainerPorts: containerPorts, ContainerName: containerName, DeviceUDID: match[0]}
 		// Append each struct object to the rows that will be displayed in the table
 		rows = append(rows, containerRow)
-
-		// Parse the template and return response with the container table rows
-		var index = template.Must(template.ParseFiles("static/ios_containers.html"))
-		if err := index.Execute(w, rows); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+	}
+	// Parse the template and return response with the container table rows
+	var index = template.Must(template.ParseFiles("static/ios_containers.html"))
+	if err := index.Execute(w, rows); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 

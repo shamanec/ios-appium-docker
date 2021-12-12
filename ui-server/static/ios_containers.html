@@ -27,8 +27,8 @@
 		</div>
 	</div>
 	</div>
+	<button class="clsInfoButtons" id="homeButton" onclick="location.href='/';">Home</button>
 	<table>
-		<button class="clsInfoButtons" id="homeButton" onclick="location.href='/';">Home</button>
 		<tr>
 			<th>ContainerID</th>
 			<th>Image Name</th>
@@ -42,7 +42,7 @@
 		<tr>
 			<td>{{.ContainerID}}</td>
 			<td style="width: 125px;">{{.ImageName}}</td>
-			<td style="width: 120px;">{{.ContainerStatus}}</td>
+			<td id="container-status-cell" class="container-status-cells" style="width: 120px;">{{.ContainerStatus}}</td>
 			<td style="width: 700px;font-size: 15px">
 				<pre>{{.ContainerPorts}}</pre>
 			</td>
@@ -193,6 +193,20 @@
 				}
 			});
 		}
+	</script>
+	<script>
+		window.addEventListener("DOMContentLoaded", function () {
+			// Just scan the DOM for the element one time
+			var containerStatusCells = document.getElementsByClassName('container-status-cells');
+
+			$('.container-status-cells').each(function(i) {
+				if (this.textContent.indexOf('Up') > -1) {
+					this.style.backgroundColor = "#4CAF50";
+				} else {
+					this.style.backgroundColor = "#fcba03";
+				}
+			});
+		});
 	</script>
 </body>
 
