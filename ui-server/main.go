@@ -343,16 +343,59 @@ func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
 
 func updateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
-	var response_config ProjectConfig
-	err := decoder.Decode(&response_config)
+	var request_config ProjectConfig
+	err := decoder.Decode(&request_config)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Fprintf(w, response_config.DevicesHost)
-	fmt.Fprintf(w, response_config.SeleniumHubHost)
-	fmt.Fprintf(w, response_config.SeleniumHubPort)
-	fmt.Fprintf(w, response_config.SeleniumHubProtocolType)
-	fmt.Fprintf(w, response_config.WdaBundleID)
+	// var response_config ProjectConfig
+
+	// response_config = ProjectConfig{DevicesHost: "", SeleniumHubHost: "", SeleniumHubPort: "", SeleniumHubProtocolType: "", WdaBundleID: ""}
+
+	// Open our jsonFile
+	jsonFile, err := os.Open("../configs/config.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		panic(err)
+	}
+
+	var result map[string]interface{}
+	err = json.Unmarshal(byteValue, &result)
+	if err != nil {
+		panic(err)
+	}
+	if request_config.DevicesHost != "" {
+		result["devices_host"] = request_config.DevicesHost
+	}
+	if request_config.SeleniumHubHost != "" {
+		result["selenium_hub_host"] = request_config.SeleniumHubHost
+	}
+	if request_config.SeleniumHubPort != "" {
+		result["selenium_hub_port"] = request_config.SeleniumHubPort
+	}
+	if request_config.SeleniumHubProtocolType != "" {
+		result["selenium_hub_protocol_type"] = request_config.SeleniumHubProtocolType
+	}
+	if request_config.WdaBundleID != "" {
+		result["wda_bundle_id"] = request_config.WdaBundleID
+	}
+
+	byteValue, err = json.Marshal(result)
+	if err != nil {
+		panic(err)
+	}
+
+	err = ioutil.WriteFile("../configs/config.json", byteValue, 0644)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func handleRequests() {
