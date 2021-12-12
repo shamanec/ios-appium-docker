@@ -10,7 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"os/exec"
 	"regexp"
 	"strconv"
 	"strings"
@@ -282,25 +282,20 @@ func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	key := vars["log_type"]
 	key2 := vars["device_udid"]
-
-	// Create a pattern for the searched file
-	pattern := "../logs/*" + key2 + "/" + key + ".txt"
-
-	// Check if the file exists
-	matches, err := filepath.Glob(pattern)
-	if err != nil {
-		fmt.Println("Couldnt find file at path: " + pattern)
-	}
-
-	// Read the file content
-	content, err := ioutil.ReadFile(matches[0])
+	// Execute the command to restart the container by container ID
+	commandString := "tail -n 1000 ../logs/*" + key2 + "/" + key + ".txt"
+	cmd := exec.Command("bash", "-c", commandString)
+	fmt.Println(key)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Respond with the file content in plain text
 	w.Header().Set("Content-Type", "text/plain")
-	fmt.Fprintf(w, string(content))
+	fmt.Fprintf(w, out.String())
 }
 
 func handleRequests() {
