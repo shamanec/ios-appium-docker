@@ -225,7 +225,11 @@ func getContainerLogs(w http.ResponseWriter, r *http.Request) {
 	buf.ReadFrom(out)
 	newStr := buf.String()
 
-	fmt.Fprintf(w, newStr)
+	if newStr != "" {
+		fmt.Fprintf(w, newStr)
+	} else {
+		fmt.Fprintf(w, "There are no actual logs for this container.")
+	}
 }
 
 // Restart docker container
@@ -276,8 +280,26 @@ func getInitialPage(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Load the initial page with the project configuration info
+func getProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
+	var index = template.Must(template.ParseFiles("static/project_config.html"))
+	if err := index.Execute(w, nil); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// Load the initial page with the project configuration info
+func getAndroidContainers(w http.ResponseWriter, r *http.Request) {
+	var index = template.Must(template.ParseFiles("static/android_containers.html"))
+	if err := index.Execute(w, nil); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
 // Get the respective device logs based on log type
 func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+
 	// Get the parameters
 	vars := mux.Vars(r)
 	key := vars["log_type"]
@@ -285,16 +307,13 @@ func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
 	// Execute the command to restart the container by container ID
 	commandString := "tail -n 1000 ../logs/*" + key2 + "/" + key + ".txt"
 	cmd := exec.Command("bash", "-c", commandString)
-	fmt.Println(key)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		log.Fatal(err)
+		fmt.Fprintf(w, "No logs of this type available for this container.")
 	}
 
-	// Respond with the file content in plain text
-	w.Header().Set("Content-Type", "text/plain")
 	fmt.Fprintf(w, out.String())
 }
 
@@ -310,6 +329,8 @@ func handleRequests() {
 	myRouter.HandleFunc("/restartContainer/{container_id}", restartContainer)
 	myRouter.HandleFunc("/deviceLogs/{log_type}/{device_udid}", getDeviceLogs)
 	myRouter.HandleFunc("/containerLogs/{container_id}", getContainerLogs)
+	myRouter.HandleFunc("/configuration", getProjectConfigurationPage)
+	myRouter.HandleFunc("/androidContainers", getAndroidContainers)
 	// assets
 	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
 

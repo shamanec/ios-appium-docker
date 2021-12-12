@@ -4,12 +4,17 @@
 <head>
   <meta charset="UTF-8">
   <title>Docker Info</title>
-  <link href="/assets/css/index_styles.css" rel="stylesheet">
 </head>
-
 <body>
-  <span>Welcome to the Appium Docker control page.<br />Please select what you want to view:</span>
-  <br></br>
+  <div class="topnav">
+    <link href="/assets/css/top_navigation_style.css" rel="stylesheet">
+    <a class="active" href="/">Home</a>
+    <a href="configuration">Project configuration</a>
+    <a href="iOSContainers">iOS Containers</a>
+    <a href="androidContainers">Android Containers</a>
+  </div>
+  <h1 style="margin: 15px;">Welcome</h1>
+  <!-- <br></br>
   <button class="indexPageButtons" id="androidContainersButton" onclick="location.href='/androidContainers';"
     style="margin:auto;">Android Containers</button>
   <br></br>
@@ -34,7 +39,7 @@
       <td>{{.SeleniumHubProtocolType}}</td>
       <td>{{.WdaBundleID}}</td>
     </tr>
-  </table>
+  </table> -->
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 </body>
 <script>

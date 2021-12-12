@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <div class="topnav">
+        <link href="/assets/css/index_styles.css" rel="stylesheet">
+        <a href="/">Home</a>
+        <a class="active" href="configuration">Project configuration</a>
+        <a href="iOSContainers">iOS Containers</a>
+        <a href="androidContainers">Android Containers</a>
+    </div>
+    <table id="configurationInfoTable">
+        <tr>
+          <th>Devices Host</th>
+          <th>Selenium Hub Host</th>
+          <th>Selenium Hub Port</th>
+          <th>Selenium Hub Protocol Type</th>
+          <th>WDA Bundle ID</th>
+        </tr>
+        <tr>
+          <td>{{.DevicesHost}}</td>
+          <td>{{.SeleniumHubHost}}</td>
+          <td>{{.SeleniumHubPort}}</td>
+          <td>{{.SeleniumHubProtocolType}}</td>
+          <td>{{.WdaBundleID}}</td>
+        </tr>
+      </table>
+</body>
+
+</html>
