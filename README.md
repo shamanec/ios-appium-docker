@@ -36,7 +36,8 @@ You need an Apple Developer account to sign and build **WebDriverAgent**
  **cp -r WebDriverAgentRunner-Runner.app Payload**
 7. Finally zip up the project as an ipa file:
  **zip -r WebDriverAgent.ipa Payload**
-8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.
+8. Get the WebDriverAgent.ipa file and put it in the current projects main directory.  
+**NB** I am not sure how I achieved building WDA into *.ipa once because now I can't seem to do it but you don't need an *.ipa to use the project. You can just take the *WebDriverAgent-Runner.app* folder from *Debug-iphoneos* and then point the *wdaSync.sh* script to this folder(before building the docker image) and it will still be installed by *go-ios*. Or you can have the WDA already installed on the devices and just comment out the *install wda* step in the *wdaSync.sh* script(before building the docker image)
 
 ## Install project usage dependencies - currently Docker, unzip, jq and usbmuxd
 
