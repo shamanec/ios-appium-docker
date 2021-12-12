@@ -282,8 +282,32 @@ func getInitialPage(w http.ResponseWriter, r *http.Request) {
 
 // Load the initial page with the project configuration info
 func getProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
+	// Open our jsonFile
+	jsonFile, err := os.Open("../configs/config.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// we initialize the devices array
+	var projectConfig ProjectConfig
+
+	// we unmarshal our byteArray which contains our
+	// jsonFile's content into 'users' which we defined above
+	json.Unmarshal(byteValue, &projectConfig)
+
+	var configRow = ProjectConfig{
+		DevicesHost:             projectConfig.DevicesHost,
+		SeleniumHubHost:         projectConfig.SeleniumHubHost,
+		SeleniumHubPort:         projectConfig.SeleniumHubPort,
+		SeleniumHubProtocolType: projectConfig.SeleniumHubProtocolType,
+		WdaBundleID:             projectConfig.WdaBundleID}
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
-	if err := index.Execute(w, nil); err != nil {
+	if err := index.Execute(w, configRow); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -317,6 +341,20 @@ func getDeviceLogs(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, out.String())
 }
 
+func updateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
+	decoder := json.NewDecoder(r.Body)
+	var response_config ProjectConfig
+	err := decoder.Decode(&response_config)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Fprintf(w, response_config.DevicesHost)
+	fmt.Fprintf(w, response_config.SeleniumHubHost)
+	fmt.Fprintf(w, response_config.SeleniumHubPort)
+	fmt.Fprintf(w, response_config.SeleniumHubProtocolType)
+	fmt.Fprintf(w, response_config.WdaBundleID)
+}
+
 func handleRequests() {
 	// Create a new instance of the mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
@@ -331,6 +369,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/containerLogs/{container_id}", getContainerLogs)
 	myRouter.HandleFunc("/configuration", getProjectConfigurationPage)
 	myRouter.HandleFunc("/androidContainers", getAndroidContainers)
+	myRouter.HandleFunc("/updateConfig", updateProjectConfigHandler)
 	// assets
 	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
 

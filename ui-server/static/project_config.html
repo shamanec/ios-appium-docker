@@ -7,28 +7,85 @@
 
 <body>
     <div class="topnav">
-        <link href="/assets/css/index_styles.css" rel="stylesheet">
+        <link href="/assets/css/top_navigation_style.css" rel="stylesheet">
         <a href="/">Home</a>
         <a class="active" href="configuration">Project configuration</a>
         <a href="iOSContainers">iOS Containers</a>
         <a href="androidContainers">Android Containers</a>
     </div>
     <table id="configurationInfoTable">
+        <link href="/assets/css/config_table.css" rel="stylesheet">
         <tr>
-          <th>Devices Host</th>
-          <th>Selenium Hub Host</th>
-          <th>Selenium Hub Port</th>
-          <th>Selenium Hub Protocol Type</th>
-          <th>WDA Bundle ID</th>
+            <th>Devices Host</th>
+            <th>Selenium Hub Host</th>
+            <th>Selenium Hub Port</th>
+            <th>Selenium Hub Protocol Type</th>
+            <th>WDA Bundle ID</th>
         </tr>
         <tr>
-          <td>{{.DevicesHost}}</td>
-          <td>{{.SeleniumHubHost}}</td>
-          <td>{{.SeleniumHubPort}}</td>
-          <td>{{.SeleniumHubProtocolType}}</td>
-          <td>{{.WdaBundleID}}</td>
+            <td>{{.DevicesHost}}</td>
+            <td>{{.SeleniumHubHost}}</td>
+            <td>{{.SeleniumHubPort}}</td>
+            <td>{{.SeleniumHubProtocolType}}</td>
+            <td>{{.WdaBundleID}}</td>
         </tr>
-      </table>
+    </table>
+    <form id="config-form">
+        <link href="/assets/css/change_config_styles.css" rel="stylesheet">
+        <ul class="wrapper">
+            <li class="form-row">
+                <label for="devices_host">Devices Host</label>
+                <input name="devices_host" type="text" id="devices_host">
+            </li>
+            <li class="form-row">
+                <label for="selenium_hub_host">Selenium Hub Host</label>
+                <input name="selenium_hub_host" type="text" id="selenium_hub_host">
+            </li>
+            <li class="form-row">
+                <label for="selenium_hub_port">Selenium Hub Port</label>
+                <input name="selenium_hub_port" type="text" id="selenium_hub_port">
+            </li>
+            <li class="form-row">
+                <label for="selenium_hub_protocol_type">Selenium Hub Protocol Type</label>
+                <input name="selenium_hub_protocol_type" type="text" id="selenium_hub_protocol_type">
+            </li>
+            <li class="form-row">
+                <label for="wda_bundle_id">WDA Bundle ID</label>
+                <input name="wda_bundle_id" type="text" id="wda_bundle_id">
+            </li>
+            <li class="form-row">
+                <button id="config-submit" type="submit">Submit</button>
+            </li>
+        </ul>
+    </form>
+    <script>
+        $("#config-form").submit(function (e) {
+            e.preventDefault();
+            var form = $(this);
+            var data = $(form).serializeArray();
+            $.ajax({
+                url: "/updateConfig",
+                type: 'post',
+                processData: false,
+                contentType: 'JSON',
+                data: JSON.stringify(getFormData(data)),
+                success: function (data) {
+                    alert(data)
+                }
+            })
+        });
+        /* Convert the form data array to a proper json */
+        function getFormData(data) {
+            var unindexed_array = data;
+            var indexed_array = {};
+
+            $.map(unindexed_array, function (n, i) {
+                indexed_array[n['name']] = n['value'];
+            });
+
+            return indexed_array;
+        }
+    </script>
 </body>
 
 </html>
