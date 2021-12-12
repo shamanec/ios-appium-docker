@@ -16,11 +16,34 @@
     <table id="configurationInfoTable">
         <link href="/assets/css/config_table.css" rel="stylesheet">
         <tr>
-            <th>Devices Host</th>
-            <th>Selenium Hub Host</th>
-            <th>Selenium Hub Port</th>
-            <th>Selenium Hub Protocol Type</th>
-            <th>WDA Bundle ID</th>
+            <th>Devices Host
+                <div class="tooltip">?
+                    <span class="tooltiptext">The address of the host machine</span>
+                </div>
+            </th>
+            <th>Selenium Hub Host
+                <div class="tooltip">?
+                    <span class="tooltiptext">The address of the targetted Selenium Hub. Not used if you won't connect
+                        to Selenium Hub.</span>
+                </div>
+            </th>
+            <th>Selenium Hub Port
+                <div class="tooltip">?
+                    <span class="tooltiptext">The port of the targetted Selenium Hub. Not used if you won't connect to
+                        Selenium Hub.</span>
+                </div>
+            </th>
+            <th>Selenium Hub Protocol Type
+                <div class="tooltip">?
+                    <span class="tooltiptext">The protocol type of the targetted Selenium Hub. Not used if you won't
+                        connect to Selenium Hub.</span>
+                </div>
+            </th>
+            <th>WDA Bundle ID
+                <div class="tooltip">?
+                    <span class="tooltiptext">The bundle ID of the targetted WDA application.</span>
+                </div>
+            </th>
         </tr>
         <tr>
             <td>{{.DevicesHost}}</td>
@@ -54,7 +77,7 @@
                 <input autocomplete="off" name="wda_bundle_id" type="text" id="wda_bundle_id">
             </li>
             <li class="form-row">
-                <button autocomplete="off" id="config-submit" type="submit">Submit</button>
+                <button id="config-submit" type="submit">Submit</button>
             </li>
         </ul>
     </form>
