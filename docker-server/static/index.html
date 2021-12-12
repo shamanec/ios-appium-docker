@@ -1,96 +1,55 @@
 <!DOCTYPE html>
 <html>
-  <style>
-    .indexPageButtons {
-      gap: 10px;
-      font-size: 14px;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      color: #fff;
-      background-color: #4CAF50;
-      border: none;
-      border-radius: 6px;
-      box-shadow: 0 3px #999;
-      margin: 6px;
-      padding: 2px 5px 2px 5px;
-      width: 150px;
-    }
 
-    .indexPageButtons:hover {
-      background-color: #3e8e41
-    }
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Info</title>
+  <link href="/assets/css/index_styles.css" rel="stylesheet">
+</head>
 
-    .indexPageButtons:active {
-      background-color: #3e8e41;
-      box-shadow: 0 5px #666;
-      transform: translateY(4px);
-    }
+<body>
+  <span>Welcome to the Appium Docker control page.<br />Please select what you want to view:</span>
+  <br></br>
+  <button class="indexPageButtons" id="androidContainersButton" onclick="location.href='/androidContainers';"
+    style="margin:auto;">Android Containers</button>
+  <br></br>
+  <button class="indexPageButtons" id="iOSContainersButton" onclick="location.href='/iOSContainers';"
+    style="margin:auto;">iOS Containers</button>
+  <br></br>
+  <button class="indexPageButtons" id="projectInfoButton" onclick="showProjectConfig()"
+    style="margin:auto;">Configuration info</button>
+  <br></br>
+  <table id="configurationInfoTable">
+    <tr>
+      <th>Devices Host</th>
+      <th>Selenium Hub Host</th>
+      <th>Selenium Hub Port</th>
+      <th>Selenium Hub Protocol Type</th>
+      <th>WDA Bundle ID</th>
+    </tr>
+    <tr>
+      <td>{{.DevicesHost}}</td>
+      <td>{{.SeleniumHubHost}}</td>
+      <td>{{.SeleniumHubPort}}</td>
+      <td>{{.SeleniumHubProtocolType}}</td>
+      <td>{{.WdaBundleID}}</td>
+    </tr>
+  </table>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</body>
+<script>
+  /* Show the configuration info */
+  function showProjectConfig() {
+    /* Get the project config span element */
+    var infoSpan = document.getElementById("configurationInfoTable")
 
-    body {
-      text-align: center;
+    /* Present or hide the project config table when clicking */
+    if (infoSpan.style.visibility === "hidden") {
+      infoSpan.style.visibility = "visible";
+    } else {
+      infoSpan.style.visibility = "hidden";
     }
+  }
+</script>
 
-    table, td, th {
-      border: 1px solid #ddd;
-      text-align: center;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    th, td {
-      padding: 15px;
-    }
-  </style>
-	<head>
-		<meta charset="UTF-8">
-		<title>Docker Info</title>
-    <link rel="stylesheet" href="/assets/styles.css" />
-	</head>
-	<body>
-    <span>Welcome to the Appium Docker control page.<br/>Please select what you want to view:</span>
-    <br></br>
-		<button class="indexPageButtons" id="androidContainersButton" onclick="location.href='/androidContainers';" style="margin:auto;">Android Containers</button>
-    <br></br>
-    <button class="indexPageButtons" id="iOSContainersButton" onclick="location.href='/iOSContainers';" style="margin:auto;">iOS Containers</button>
-    <br></br>
-    <button class="indexPageButtons" id="projectInfoButton" onclick="showProjectConfig()" style="margin:auto;">Configuration info</button>
-    <br></br>
-    <table id="configurationInfoTable" style="visibility:hidden;">
-      <tr>
-        <th>Devices Host</th>
-        <th>Selenium Hub Host</th>
-        <th>Selenium Hub Port</th>
-        <th>Selenium Hub Protocol Type</th>
-        <th>WDA Bundle ID</th>
-      </tr>
-      <tr>
-        <td>{{.DevicesHost}}</td>
-        <td>{{.SeleniumHubHost}}</td>
-        <td>{{.SeleniumHubPort}}</td>
-        <td>{{.SeleniumHubProtocolType}}</td>
-        <td>{{.WdaBundleID}}</td>
-      </tr>
-    </table>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	</body>
-  <script>
-    /* Show the configuration info */
-    function showProjectConfig() {
-      /* Get the project config span element */
-      var infoSpan = document.getElementById("configurationInfoTable")
-
-      /* Present or hide the project config table when clicking */
-      if (infoSpan.style.visibility === "hidden") {
-        infoSpan.style.visibility = "visible";
-      } else {
-        infoSpan.style.visibility = "hidden";
-      }
-    }
-  </script>
 </html>

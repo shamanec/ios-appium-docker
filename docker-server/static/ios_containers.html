@@ -1,200 +1,31 @@
 <!DOCTYPE html>
 <html>
-<style>
-	table,
-	td,
-	th {
-		border: 1px solid #ddd;
-		text-align: center;
-	}
-
-	table {
-		border-collapse: collapse;
-		width: 100%;
-	}
-
-	th,
-	td {
-		padding: 15px;
-	}
-
-	.clsInfoButtons {
-		display: inline-block;
-		display: grid;
-		gap: 10px;
-		font-size: 14px;
-		cursor: pointer;
-		text-align: center;
-		text-decoration: none;
-		color: #fff;
-		background-color: #4CAF50;
-		border: none;
-		border-radius: 6px;
-		box-shadow: 0 3px #999;
-		margin: 8px;
-		padding: 2px 5px 2px 5px;
-	}
-
-	.clsInfoButtons:hover {
-		background-color: #3e8e41
-	}
-
-	.clsInfoButtons:active {
-		background-color: #3e8e41;
-		box-shadow: 0 5px #666;
-		transform: translateY(4px);
-	}
-
-	.clsRestartButton {
-		font-size: 14px;
-		cursor: pointer;
-		text-align: center;
-		text-decoration: none;
-		color: #fff;
-		background-color: #da492a;
-		border: none;
-		border-radius: 6px;
-		box-shadow: 0 3px #999;
-		margin: 8px;
-		padding: 2px 5px 2px 5px;
-		width: 80px;
-	}
-
-	.clsRestartButton:hover {
-		background-color: #da322a
-	}
-
-	.clsRestartButton:active {
-		background-color: #da492a;
-		box-shadow: 0 5px #666;
-		transform: translateY(4px);
-	}
-
-	#loading {
-		position: fixed;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		left: 0;
-		text-align: center;
-		opacity: 0.7;
-		background-color: #fff;
-		z-index: 99;
-	}
-
-	#loading-image {
-		position: relative;
-	}
-
-	.hidden {
-		display: none;
-	}
-
-	.modal {
-		display: none;
-		z-index: 1;
-		position: fixed;
-		width: 100%;
-		height: 100%;
-		background-color: rgb(0, 0, 0);
-		background-color: rgba(0, 0, 0, 0.4);
-		overflow: inherit;
-		overflow-y: inherit;
-		text-align: center;
-		word-wrap: break-word;
-	}
-
-	.modal:before {
-		content: '';
-		display: inline-block;
-		height: 100%;
-		vertical-align: middle;
-		margin-right: -4px;
-	}
-
-	.modal-dialog {
-		padding: 0;
-		display: inline-block;
-		text-align: left;
-		vertical-align: middle;
-		width: 50%;
-		height: 60%;
-	}
-
-	.modal-content {
-
-		border: 1;
-		border-radius: 0;
-		background-color: #fefefe;
-
-	}
-
-	.modal-header {
-		border: 1;
-		padding: 0;
-		position: relative;
-	}
-
-	.modal-content p {
-		padding: 0 20px;
-	}
-
-	.modal-body {
-		padding: 10px 10px 10px 10px;
-		height: 450px;
-		overflow: auto;
-		border-top: 1px solid #000;
-		border-right: 1px solid #000;
-		border-left: 1px solid #000;
-	}
-
-	.modal-footer {
-		border-bottom: 1px solid #000;
-		border-right: 1px solid #000;
-		border-left: 1px solid #000;
-		background-color: #fefefe;
-		height: 40px;
-	}
-</style>
 
 <head>
 	<meta charset="UTF-8">
 	<title>iOS Containers Info</title>
+	<link href="/assets/css/ios_containers_styles.css" rel="stylesheet">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 </head>
 
 <body>
-	<div id="loading" style="visibility: hidden">
+	<div id="loading">
 		<img id="loading-image" src="/assets/images/loader.gif">
 	</div>
-	<!-- <div id="infoModal" class="modal">
-			<div class="modal-content">
-				<div class="modal-header"> Logs
-					<button class="modalRefresh fa">&#xf021;</button>
-					<button class="close fa">&times;</button>
-				</div>
-				<pre>
-					<div class="modal-body"></div>
-				</pre>
-			</div>
-		</div> -->
 	<!-- Modal -->
 	<div class="modal fade" id="deviceLogsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
-				<pre>
-					<div class="modal-body"></div>
-				</pre>
-					<div class="modal-footer">
-					<button style="font-size:18px;height:26px;margin-left: 7px;margin-top: 7px;" type="button" class="close btn btn-default" data-dismiss="modal">Close</button>
-					<button id="refreshLogsButton" onclick="refreshLogs(this);" style="font-size:20px;height:26px;margin-top: 7px;" class="fa fa-refresh">Refresh logs</button>
+				<div class="modal-body"></div>
+				<div class="modal-footer">
+					<button id="modal-close-button" class="close btn btn-default" type="button"
+						data-dismiss="modal">Close</button>
+					<button id="refresh-logs-button" class="fa fa-refresh" onclick="refreshLogs(this);">Refresh
+						logs</button>
 				</div>
-				  </div>
 			</div>
 		</div>
+	</div>
 	</div>
 	<table>
 		<button class="clsInfoButtons" id="homeButton" onclick="location.href='/';">Home</button>
@@ -319,7 +150,7 @@
 			var deviceUDID = buttonObj.value
 
 			var url = "/deviceLogs/" + logType + "/" + deviceUDID
-			var refreshButton = document.getElementById("refreshLogsButton")
+			var refreshButton = document.getElementById("refresh-logs-button")
 			refreshButton.value = url
 			/* Call the endpoint that will get the chosen logs */
 			$.ajax({
@@ -347,7 +178,8 @@
 		}
 
 		function refreshLogs(buttonObj) {
-			var refreshButton = document.getElementById("refreshLogsButton")
+			var refreshButton = document.getElementById("refresh-logs-button")
+			var modalBody = document.getElementsByClassName("modal-body")[0]
 			$.ajax({
 				async: false,
 				type: "GET",
@@ -355,6 +187,9 @@
 				success: function (data) {
 					/* Set the modal text */
 					$('.modal-body').html(data)
+
+					/* Scroll to the bottom of the logs on refresh */
+					modalBody.scrollTop = modalBody.scrollHeight;
 				}
 			});
 		}
