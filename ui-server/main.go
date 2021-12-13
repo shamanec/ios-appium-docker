@@ -415,6 +415,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/updateConfig", updateProjectConfigHandler)
 	// assets
 	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
+	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 
 	myRouter.HandleFunc("/", getInitialPage)
 

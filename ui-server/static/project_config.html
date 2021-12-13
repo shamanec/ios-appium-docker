@@ -1,11 +1,50 @@
 <!DOCTYPE html>
 <html>
-
+<style>
+.modal {
+  display: none;
+  z-index: 1;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background-color: rgb(0, 0, 0);
+  background-color: rgba(0, 0, 0, 0.4);
+  overflow: inherit;
+  overflow-y: inherit;
+  text-align: center;
+  word-wrap: break-word;
+}
+.modal-dialog {
+  padding: 0;
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+  width: 100%;
+  height: 100%;
+}
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+</style>
 <head>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+    $(function(){
+      $("#modal-body").load("/static/project_config_submission_form.html");
+    });
+    </script>
 </head>
 
 <body>
+    <!-- Modal -->
+    <div class="modal fade" id="deviceLogsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+      <link href="/assets/css/change_config_modal_styles.css" rel="stylesheet">
+          <div id="modal-body" class="modal-body" style="margin:auto;"></div>
+    </div>
     <div class="topnav">
         <link href="/assets/css/top_navigation_style.css" rel="stylesheet">
         <a href="/">Home</a>
@@ -13,6 +52,7 @@
         <a href="iOSContainers">iOS containers</a>
         <a href="androidContainers">Android containers</a>
     </div>
+    <div>
     <table id="configurationInfoTable">
         <link href="/assets/css/config_table.css" rel="stylesheet">
         <tr>
@@ -53,34 +93,8 @@
             <td>{{.WdaBundleID}}</td>
         </tr>
     </table>
-    <form id="config-form">
-        <link href="/assets/css/change_config_styles.css" rel="stylesheet">
-        <ul class="wrapper">
-            <li class="form-row">
-                <label for="devices_host">Devices Host</label>
-                <input autocomplete="off" name="devices_host" type="text" id="devices_host">
-            </li>
-            <li class="form-row">
-                <label for="selenium_hub_host">Selenium Hub Host</label>
-                <input autocomplete="off" name="selenium_hub_host" type="text" id="selenium_hub_host">
-            </li>
-            <li class="form-row">
-                <label for="selenium_hub_port">Selenium Hub Port</label>
-                <input autocomplete="off" name="selenium_hub_port" type="text" id="selenium_hub_port">
-            </li>
-            <li class="form-row">
-                <label for="selenium_hub_protocol_type">Selenium Hub Protocol Type</label>
-                <input autocomplete="off" name="selenium_hub_protocol_type" type="text" id="selenium_hub_protocol_type">
-            </li>
-            <li class="form-row">
-                <label for="wda_bundle_id">WDA Bundle ID</label>
-                <input autocomplete="off" name="wda_bundle_id" type="text" id="wda_bundle_id">
-            </li>
-            <li class="form-row">
-                <button id="config-submit" type="submit">Submit</button>
-            </li>
-        </ul>
-    </form>
+    </div>
+    <button type="button" onclick="showInfoModal()">Show form</button>
     <script>
         $("#config-form").submit(function (e) {
             e.preventDefault();
@@ -113,6 +127,24 @@
 
             return indexed_array;
         }
+        /* Show info modal with provided text */
+    		function showInfoModal() {
+    			/* Get the modal element */
+    			var modal = document.getElementById("deviceLogsModal")
+
+    			/* Get the close button */
+    			var span = document.getElementsByClassName("close")[0]
+
+    			/* Display the modal blocking interaction */
+    			modal.style.display = "block";
+
+    			/* Close the modal if you click anywhere outside the modal */
+    			window.onclick = function (event) {
+    				if (event.target == modal) {
+    					modal.style.display = "none";
+    				}
+    			}
+    		}
     </script>
 </body>
 
