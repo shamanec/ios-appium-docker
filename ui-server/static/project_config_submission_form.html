@@ -32,5 +32,38 @@
         </li>
     </ul>
 </form>
+<script>
+  $("#config-form").submit(function (e) {
+      e.preventDefault();
+      var form = $(this);
+      var data = $(form).serializeArray();
+      $.ajax({
+          url: "/updateConfig",
+          type: 'post',
+          processData: false,
+          contentType: 'JSON',
+          data: JSON.stringify(getFormData(data)),
+          success: function () {
+              alert("Successfully updated project config")
+              /* Reload the page to get the new info */
+              location.reload();
+          },
+          error: function () {
+              alert("Could not update project config");
+          }
+      })
+  });
+  /* Convert the form data array to a proper json */
+  function getFormData(data) {
+      var unindexed_array = data;
+      var indexed_array = {};
+
+      $.map(unindexed_array, function (n, i) {
+          indexed_array[n['name']] = n['value'];
+      });
+
+      return indexed_array;
+  }
+</script>
 </body>
 </html>
