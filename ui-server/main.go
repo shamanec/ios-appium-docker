@@ -291,21 +291,25 @@ func getProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
+	// Read the JSON file
 	byteValue, _ := ioutil.ReadAll(jsonFile)
 
-	// we initialize the devices array
+	// initialize the devices array
 	var projectConfig ProjectConfig
 
-	// we unmarshal our byteArray which contains our
-	// jsonFile's content into 'users' which we defined above
+	// unmarshal our byteArray which contains our
+	// jsonFile's content into 'projectConfig' which is defined above
 	json.Unmarshal(byteValue, &projectConfig)
 
+	// Create the config row that will provide the data to the templated table
 	var configRow = ProjectConfig{
 		DevicesHost:             projectConfig.DevicesHost,
 		SeleniumHubHost:         projectConfig.SeleniumHubHost,
 		SeleniumHubPort:         projectConfig.SeleniumHubPort,
 		SeleniumHubProtocolType: projectConfig.SeleniumHubProtocolType,
 		WdaBundleID:             projectConfig.WdaBundleID}
+
+	// Load the page templating the project config values
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
 	if err := index.Execute(w, configRow); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -348,9 +352,6 @@ func updateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	// var response_config ProjectConfig
-
-	// response_config = ProjectConfig{DevicesHost: "", SeleniumHubHost: "", SeleniumHubPort: "", SeleniumHubProtocolType: "", WdaBundleID: ""}
 
 	// Open our jsonFile
 	jsonFile, err := os.Open("../configs/config.json")
@@ -361,40 +362,53 @@ func updateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
+	// Read the json file
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		panic(err)
 	}
 
+	// Unmarshal the JSON file
 	var result map[string]interface{}
 	err = json.Unmarshal(byteValue, &result)
 	if err != nil {
 		panic(err)
 	}
+
 	if request_config.DevicesHost != "" {
 		result["devices_host"] = request_config.DevicesHost
-	}
-	if request_config.SeleniumHubHost != "" {
+	} else if request_config.SeleniumHubHost != "" {
 		result["selenium_hub_host"] = request_config.SeleniumHubHost
-	}
-	if request_config.SeleniumHubPort != "" {
+	} else if request_config.SeleniumHubPort != "" {
 		result["selenium_hub_port"] = request_config.SeleniumHubPort
-	}
-	if request_config.SeleniumHubProtocolType != "" {
+	} else if request_config.SeleniumHubProtocolType != "" {
 		result["selenium_hub_protocol_type"] = request_config.SeleniumHubProtocolType
-	}
-	if request_config.WdaBundleID != "" {
+	} else if request_config.WdaBundleID != "" {
 		result["wda_bundle_id"] = request_config.WdaBundleID
 	}
 
+	// Marshal  the new json
 	byteValue, err = json.Marshal(result)
 	if err != nil {
 		panic(err)
 	}
 
+	// Write the new json to the config.json file
 	err = ioutil.WriteFile("../configs/config.json", byteValue, 0644)
 	if err != nil {
 		panic(err)
+	}
+}
+
+func buildDockerImage() {
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := cli.ImageBuild(ctx, key, nil); err != nil {
+		log.Printf("Unable to restart container %s: %s", key, err)
 	}
 }
 
