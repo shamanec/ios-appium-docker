@@ -400,15 +400,34 @@ func updateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func buildDockerImage() {
-	ctx := context.Background()
-	cli, err := client.NewClientWithOpts(client.FromEnv)
-	if err != nil {
-		panic(err)
-	}
+func workWithDockerfile(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		// Open our Dockerfile
+		dockerfile, err := os.Open("../Dockerfile")
+		// if we os.Open returns an error then handle it
+		if err != nil {
+			fmt.Println(err)
+		}
+		// defer the closing of our jsonFile so that we can parse it later on
+		defer dockerfile.Close()
 
-	if err := cli.ImageBuild(ctx, key, nil); err != nil {
-		log.Printf("Unable to restart container %s: %s", key, err)
+		byteValue, _ := ioutil.ReadAll(dockerfile)
+
+		fmt.Fprintf(w, string(byteValue))
+	case "POST":
+		// Open our Dockerfile
+		dockerfile, err := os.Open("../Dockerfile")
+		// if we os.Open returns an error then handle it
+		if err != nil {
+			fmt.Println(err)
+		}
+		// defer the closing of our jsonFile so that we can parse it later on
+		defer dockerfile.Close()
+
+		byteValue, _ := ioutil.ReadAll(dockerfile)
+
+		fmt.Fprintf(w, "THIS IS ON POST"+string(byteValue))
 	}
 }
 
@@ -427,6 +446,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/configuration", getProjectConfigurationPage)
 	myRouter.HandleFunc("/androidContainers", getAndroidContainers)
 	myRouter.HandleFunc("/updateConfig", updateProjectConfigHandler)
+	myRouter.HandleFunc("/dockerfile", workWithDockerfile)
 	// assets
 	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
 	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
