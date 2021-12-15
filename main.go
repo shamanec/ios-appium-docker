@@ -591,8 +591,8 @@ func handleRequests() {
 	myRouter.HandleFunc("/updateConfig", updateProjectConfigHandler)
 	myRouter.HandleFunc("/dockerfile", interactDockerFile)
 	myRouter.HandleFunc("/build-image", buildDockerImage)
+
 	// assets
-	myRouter.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
 	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
 	myRouter.PathPrefix("/main/").Handler(http.StripPrefix("/main/", http.FileServer(http.Dir("./"))))
 
