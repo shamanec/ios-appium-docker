@@ -35,6 +35,13 @@
         aria-hidden="true">
         <div id="modal-body" class="modal-body" style="margin-top:200px;"></div>
     </div>
+    <div class="modal fade" id="device-selection-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div>
+            <select id="device-dropdown" name="devices" onchange="enableDisableSubmit(this)">
+            </select>
+            <button id="add-device-button" type="button" onclick="registerIOSDevice()">Add device</button>
+        </div>
+    </div>
     <div class="topnav">
         <link href="/static/css/top_navigation_style.css" rel="stylesheet">
         <a href="/">Home</a>
@@ -89,18 +96,21 @@
     <div class="config-buttons">
         <button class="config-button" id="config-button" type="button" onclick="showConfigModal()">Change project
             config</button>
-        <button class="config-button" id="config-button" type="button" onclick="showDockerfileModal()">Edit
+        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Edit
             Dockerfile</button>
         <button class="config-button" id="config-button" type="button" onclick="buildImage(this)">Build Docker
             image</button>
         <button class="config-button" id="config-button" type="button" onclick="removeImage()">Remove Docker
             image</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
-        <button class="config-button" id="config-button" type="button">Not sure yet</button>
+        <button class="config-button" id="config-button" type="button" onclick="startListener(true)">Start listener -
+            Grid</button>
+        <button class="config-button" id="config-button" type="button" onclick="startListener(false)">Start listener -
+            No Grid</button>
+        <button class="config-button" id="config-button" type="button" onclick="stopListener()">Stop listener</button>
+        <button class="config-button" id="config-button" type="button" onclick="showIOSDeviceSelection()">Add a
+            device</button>
+        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup udev listener</button>
+        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Remove udev listener</button>
     </div>
     <script>
         /* Show info modal with provided text */
@@ -159,21 +169,11 @@
                     /* Hide the loading after response is returned */
                     $('#loading').css("visibility", "hidden");
                 },
-                error: function(data) {
+                error: function (data) {
                     alert(JSON.stringify(data))
                     $('#loading').css("visibility", "hidden");
                 }
             });
-            // req.success(function(data) {
-            //     alert("Successfully created image tagged: test \n" + data)
-            //     /* Hide the loading after response is returned */
-            //     $('#loading').css("visibility", "hidden");
-            // });
-            // req.error(function(data) {
-            //     alert(data)
-            //     /* Hide the loading after response is returned */
-            //     $('#loading').css("visibility", "hidden");
-            // });
         }
 
         function removeImage() {
@@ -196,6 +196,134 @@
 
             /* Hide the loading after response is returned */
             $('#loading').css("visibility", "hidden");
+        }
+
+        function stopListener() {
+            /* Show loading indicator until response is returned */
+            $('#loading').css("visibility", "visible");
+
+            /* Call the endpoint that will restart the selected container */
+            $.ajax({
+                dataType: false,
+                async: true,
+                type: "GET",
+                url: "/stop-listener",
+                success: function (data) {
+                    alert(data)
+                },
+                error: function (data) {
+                    alert(JSON.stringify(data))
+                }
+            });
+
+            /* Hide the loading after response is returned */
+            $('#loading').css("visibility", "hidden");
+        }
+
+        function startListener(gridBool) {
+            /* Show loading indicator until response is returned */
+            $('#loading').css("visibility", "visible");
+
+            if (gridBool) {
+                url = "/start-listener-grid"
+            } else {
+                url = "/start-listener-no-grid"
+            }
+
+            /* Call the endpoint that will start the respective listener config */
+            $.ajax({
+                dataType: false,
+                async: true,
+                type: "GET",
+                url: url,
+                success: function (data) {
+                    alert(data)
+                },
+                error: function (data) {
+                    alert(JSON.stringify(data))
+                }
+            });
+
+            /* Hide the loading after response is returned */
+            $('#loading').css("visibility", "hidden");
+        }
+
+        function showIOSDeviceSelection() {
+            $('#add-device-button').prop('disabled', true);
+            /* Get the modal element */
+            var modal = document.getElementById("device-selection-modal")
+
+            /* Get the close button */
+            var span = document.getElementsByClassName("close")[0]
+
+            let dropdown = $('#device-dropdown');
+
+            dropdown.empty();
+
+            dropdown.append('<option>Choose device</option>');
+            dropdown.prop('selectedIndex', 0);
+
+            $.ajax({
+                dataType: false,
+                async: true,
+                type: "GET",
+                url: "/get-ios-devices",
+                success: function (data) {
+                    var response = JSON.parse(data)
+                    for (let i = 0; i < response.deviceList.length; i++) {
+                        dropdown.append($('<option></option>').attr('value', response.deviceList[i].Udid).text("Device UDID: " + response.deviceList[i].Udid + ", Product Type: " + response.deviceList[i].ProductType + ", Device OS: " + response.deviceList[i].ProductVersion));
+                    }
+                },
+                error: function (data) {
+                    alert("Couldn't get devices")
+                }
+            });
+
+            /* Display the modal blocking interaction */
+            modal.style.display = "block";
+
+            /* Close the modal if you click anywhere outside the modal */
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function registerIOSDevice() {
+            var modal = document.getElementById("device-selection-modal")
+            // Get the device UDID from the value of the selected option
+            var device_udid = $("#device-dropdown").val();
+
+            // Send a request to register the device with the respective selected device UDID
+            $.ajax({
+                dataType: false,
+                async: true,
+                type: "GET",
+                url: "/register-ios-device/" + device_udid,
+                success: function (data) {
+                    alert(data)
+                    modal.style.display = "none";
+                },
+                error: function (data) {
+                    alert(data)
+                    modal.style.display = "none";
+                }
+            });
+        }
+
+        function enableDisableSubmit(dropdownObj) {
+            // Check the currently selected option
+            // If it is the default one disable the Add button else enable it
+            if (dropdownObj.options[dropdownObj.selectedIndex].text === "Choose device") {
+                $('#add-device-button').prop('disabled', true);
+            } else {
+                $('#add-device-button').prop('disabled', false);
+            }
+        }
+
+        function notImplemented() {
+            alert("Not implemented")
         }
     </script>
 </body>

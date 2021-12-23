@@ -19,6 +19,9 @@ import (
 )
 
 func BuildDockerImage(w http.ResponseWriter, r *http.Request) {
+	// Delete build-context.tar if it exists
+	DeleteFile("./build-context.tar")
+
 	// Create a tar to be used as build-context for the image build
 	// The tar should include all files needed by the Dockerfile to successfully create the image
 	files := []string{"Dockerfile", "WebDriverAgent.ipa", "configs/nodeconfiggen.sh", "configs/wdaSync.sh"}

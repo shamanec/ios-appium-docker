@@ -196,6 +196,11 @@ func handleRequests() {
 	myRouter.HandleFunc("/dockerfile", InteractDockerFile)
 	myRouter.HandleFunc("/build-image", BuildDockerImage)
 	myRouter.HandleFunc("/remove-image", RemoveDockerImage)
+	myRouter.HandleFunc("/start-listener-grid", StartListenerGrid)
+	myRouter.HandleFunc("/start-listener-no-grid", StartListenerNoGrid)
+	myRouter.HandleFunc("/stop-listener", StopListener)
+	myRouter.HandleFunc("/get-ios-devices", GetConnectedIOSDevices)
+	myRouter.HandleFunc("/register-ios-device/{device_udid}", RegisterIOSDevice)
 
 	// assets
 	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))

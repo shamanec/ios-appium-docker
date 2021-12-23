@@ -72,3 +72,71 @@ func ReturnDeviceInfo(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+func GetConnectedIOSDevices(w http.ResponseWriter, r *http.Request) {
+	// The command to get all connected devices with go-ios
+	getPIDcommand := "./ios list --details"
+	cmd := exec.Command("bash", "-c", getPIDcommand)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	// Execute the command and either return error or the connected devices JSON
+	err := cmd.Run()
+	if err != nil || out.String() == "" {
+		fmt.Fprintf(w, "Couldn't get iOS devices with go-ios or no devices connected to the machine.")
+		return
+	} else {
+		fmt.Fprintf(w, out.String())
+	}
+}
+
+func RegisterIOSDevice(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	// key := vars["device_udid"]
+
+	// Open our jsonFile
+	jsonFile, err := os.Open("./configs/config.json")
+
+	// if os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// we initialize the devices array
+	var devices Devices
+
+	// we unmarshal our byteArray which contains our
+	// jsonFile's content into 'users' which we defined above
+	json.Unmarshal(byteValue, &devices)
+
+	// Loop over the devices and return message if device is already registered
+	// for i := 0; i < len(devices.Devices); i++ {
+	// 	if devices.Devices[i].DeviceUDID == key {
+	// 		fmt.Fprintf(w, "The device with UDID: "+key+" is already registered.")
+	// 		return
+	// 	}
+	// }
+
+	var device Device
+
+	var deviceInfo = Device{
+		AppiumPort:      device.AppiumPort,
+		DeviceName:      device.DeviceName,
+		DeviceOSVersion: device.DeviceOSVersion,
+		DeviceUDID:      device.DeviceUDID,
+		WdaMjpegPort:    device.WdaMjpegPort,
+		WdaPort:         device.WdaPort}
+
+	// Marshal  the new json
+	byteValue, err = json.Marshal(deviceInfo)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Fprintf(w, string(byteValue))
+}
