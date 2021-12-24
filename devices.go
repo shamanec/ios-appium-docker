@@ -11,6 +11,8 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
 
 // Get the respective device logs based on log type
@@ -91,52 +93,54 @@ func GetConnectedIOSDevices(w http.ResponseWriter, r *http.Request) {
 }
 
 func RegisterIOSDevice(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// key := vars["device_udid"]
+	// Get the request json body and extract the device UDID and OS version
+	requestBody, _ := ioutil.ReadAll(r.Body)
+	device_udid := gjson.Get(string(requestBody), "device_udid")
+	device_os_version := gjson.Get(string(requestBody), "device_os_version")
 
-	// Open our jsonFile
+	// Open the configuration json file
 	jsonFile, err := os.Open("./configs/config.json")
-
-	// if os.Open returns an error then handle it
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintf(w, err.Error())
 	}
-
-	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	// we initialize the devices array
-	var devices Devices
-
-	// we unmarshal our byteArray which contains our
-	// jsonFile's content into 'users' which we defined above
-	json.Unmarshal(byteValue, &devices)
-
-	// Loop over the devices and return message if device is already registered
-	// for i := 0; i < len(devices.Devices); i++ {
-	// 	if devices.Devices[i].DeviceUDID == key {
-	// 		fmt.Fprintf(w, "The device with UDID: "+key+" is already registered.")
-	// 		return
-	// 	}
-	// }
-
-	var device Device
-
-	var deviceInfo = Device{
-		AppiumPort:      device.AppiumPort,
-		DeviceName:      device.DeviceName,
-		DeviceOSVersion: device.DeviceOSVersion,
-		DeviceUDID:      device.DeviceUDID,
-		WdaMjpegPort:    device.WdaMjpegPort,
-		WdaPort:         device.WdaPort}
-
-	// Marshal  the new json
-	byteValue, err = json.Marshal(deviceInfo)
+	// Read the configuration json file into byte array
+	configJson, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(w, err.Error())
 	}
 
-	fmt.Fprintf(w, string(byteValue))
+	// Get the UDIDs of all devices registered in the config.json
+	jsonDevicesUDIDs := gjson.Get(string(configJson), "devicesList.#.device_udid")
+
+	//Loop over the devices UDIDs and return message if device is already registered
+	for _, udid := range jsonDevicesUDIDs.Array() {
+		if udid.String() == device_udid.String() {
+			fmt.Fprintf(w, "The device with UDID: "+device_udid.String()+" is already registered.")
+			return
+		}
+	}
+
+	// Create the object for the new device
+	var deviceInfo = Device{
+		AppiumPort:      4841 + len(jsonDevicesUDIDs.Array()),
+		DeviceName:      "test",
+		DeviceOSVersion: device_os_version.String(),
+		DeviceUDID:      device_udid.String(),
+		WdaMjpegPort:    20101 + len(jsonDevicesUDIDs.Array()),
+		WdaPort:         20001 + len(jsonDevicesUDIDs.Array())}
+
+	// Append the new device object to the devicesList array
+	updatedJSON, _ := sjson.Set(string(configJson), "devicesList.-1", deviceInfo)
+
+	// Prettify the json so it looks good inside the file
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, []byte(updatedJSON), "", "    ")
+
+	// Write the new json to the config.json file
+	err = ioutil.WriteFile("./configs/config.json", []byte(prettyJSON.String()), 0644)
+	if err != nil {
+		fmt.Fprintf(w, "Could not write to the config.json file.")
+	}
 }

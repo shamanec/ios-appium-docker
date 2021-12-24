@@ -39,6 +39,7 @@
         <div>
             <select id="device-dropdown" name="devices" onchange="enableDisableSubmit(this)">
             </select>
+            <input id="register-device-name" type="text"></input>
             <button id="add-device-button" type="button" onclick="registerIOSDevice()">Add device</button>
         </div>
     </div>
@@ -267,11 +268,11 @@
                 dataType: false,
                 async: true,
                 type: "GET",
-                url: "/get-ios-devices",
+                url: "/ios-devices",
                 success: function (data) {
                     var response = JSON.parse(data)
                     for (let i = 0; i < response.deviceList.length; i++) {
-                        dropdown.append($('<option></option>').attr('value', response.deviceList[i].Udid).text("Device UDID: " + response.deviceList[i].Udid + ", Product Type: " + response.deviceList[i].ProductType + ", Device OS: " + response.deviceList[i].ProductVersion));
+                        dropdown.append($('<option></option>').attr('value', response.deviceList[i].Udid + ":" + response.deviceList[i].ProductVersion).text("Device UDID: " + response.deviceList[i].Udid + ", Product Type: " + response.deviceList[i].ProductType + ", Device OS: " + response.deviceList[i].ProductVersion));
                     }
                 },
                 error: function (data) {
@@ -294,19 +295,26 @@
             var modal = document.getElementById("device-selection-modal")
             // Get the device UDID from the value of the selected option
             var device_udid = $("#device-dropdown").val();
+            var device_name = $("#register-device-name").val();
+            if (device_name === "") {
+                alert("Please provide a device name. Avoid using special characters and spaces except for '_'. Example: iPhone_11")
+                return
+            }
+            deviceInfoArray = device_udid.split(new RegExp(":"));
 
             // Send a request to register the device with the respective selected device UDID
             $.ajax({
-                dataType: false,
+                contentType: 'application/json',
                 async: true,
-                type: "GET",
-                url: "/register-ios-device/" + device_udid,
+                type: "POST",
+                data: JSON.stringify({"device_udid": deviceInfoArray[0],"device_os_version": deviceInfoArray[1]}),
+                url: "/ios-devices/register",
                 success: function (data) {
                     alert(data)
                     modal.style.display = "none";
                 },
                 error: function (data) {
-                    alert(data)
+                    alert("FAILURE")
                     modal.style.display = "none";
                 }
             });

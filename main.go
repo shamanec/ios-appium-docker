@@ -56,11 +56,11 @@ func GetInitialPage(w http.ResponseWriter, r *http.Request) {
 
 // Load the initial page with the project configuration info
 func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
-	// Open our jsonFile
+	// Open the config jsonFile
 	jsonFile, err := os.Open("./configs/config.json")
-	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
@@ -95,7 +95,8 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	var request_config ProjectConfig
 	err := decoder.Decode(&request_config)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	// Open our jsonFile
@@ -103,6 +104,7 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
+		return
 	}
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
@@ -110,14 +112,16 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 	// Read the json file
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	// Unmarshal the JSON file
 	var result map[string]interface{}
 	err = json.Unmarshal(byteValue, &result)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 
 	if request_config.DevicesHost != "" {
@@ -199,8 +203,8 @@ func handleRequests() {
 	myRouter.HandleFunc("/start-listener-grid", StartListenerGrid)
 	myRouter.HandleFunc("/start-listener-no-grid", StartListenerNoGrid)
 	myRouter.HandleFunc("/stop-listener", StopListener)
-	myRouter.HandleFunc("/get-ios-devices", GetConnectedIOSDevices)
-	myRouter.HandleFunc("/register-ios-device/{device_udid}", RegisterIOSDevice)
+	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
+	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
 
 	// assets
 	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
