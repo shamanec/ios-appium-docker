@@ -3,7 +3,9 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
+	"encoding/json"
 	"io"
+	"net/http"
 	"os"
 )
 
@@ -77,4 +79,20 @@ func DeleteFile(filePath string) {
 	if err != nil {
 		panic("Could not delete file at: " + string(filePath) + ". " + err.Error())
 	}
+}
+
+// Device struct which contains device info
+type ErrorJSON struct {
+	ErrorCode    string `json:"error_code"`
+	ErrorMessage string `json:"error_message"`
+}
+
+func JSONError(w http.ResponseWriter, error_code string, error_string string, code int) {
+	var errorMessage = ErrorJSON{
+		ErrorCode:    error_code,
+		ErrorMessage: error_string}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(errorMessage)
 }

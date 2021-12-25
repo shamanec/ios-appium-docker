@@ -85,8 +85,7 @@ func GetConnectedIOSDevices(w http.ResponseWriter, r *http.Request) {
 	// Execute the command and either return error or the connected devices JSON
 	err := cmd.Run()
 	if err != nil || out.String() == "" {
-		fmt.Fprintf(w, "Couldn't get iOS devices with go-ios or no devices connected to the machine.")
-		return
+		JSONError(w, "no_devices_attached", "Couldn't get iOS devices with go-ios or no devices connected to the machine.", 500)
 	} else {
 		fmt.Fprintf(w, out.String())
 	}
@@ -101,26 +100,26 @@ func RegisterIOSDevice(w http.ResponseWriter, r *http.Request) {
 	// Open the configuration json file
 	jsonFile, err := os.Open("./configs/config.json")
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
+		JSONError(w, "config_file_error", "Could not open the config.json file.", 500)
 	}
 	defer jsonFile.Close()
 
 	// Read the configuration json file into byte array
 	configJson, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
-		fmt.Fprintf(w, err.Error())
+		JSONError(w, "config_file_error", "Could not read the config.json file.", 500)
 	}
 
 	// Get the UDIDs of all devices registered in the config.json
 	jsonDevicesUDIDs := gjson.Get(string(configJson), "devicesList.#.device_udid")
 
 	//Loop over the devices UDIDs and return message if device is already registered
-	for _, udid := range jsonDevicesUDIDs.Array() {
-		if udid.String() == device_udid.String() {
-			fmt.Fprintf(w, "The device with UDID: "+device_udid.String()+" is already registered.")
-			return
-		}
-	}
+	// for _, udid := range jsonDevicesUDIDs.Array() {
+	// 	if udid.String() == device_udid.String() {
+	// 		JSONError(w, "device_registered", "The device with UDID: "+device_udid.String()+" is already registered.", 400)
+	// 		return
+	// 	}
+	// }
 
 	// Create the object for the new device
 	var deviceInfo = Device{
@@ -136,11 +135,11 @@ func RegisterIOSDevice(w http.ResponseWriter, r *http.Request) {
 
 	// Prettify the json so it looks good inside the file
 	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, []byte(updatedJSON), "", "    ")
+	json.Indent(&prettyJSON, []byte(updatedJSON), "", "\t")
 
 	// Write the new json to the config.json file
 	err = ioutil.WriteFile("./configs/config.json", []byte(prettyJSON.String()), 0644)
 	if err != nil {
-		fmt.Fprintf(w, "Could not write to the config.json file.")
+		JSONError(w, "config_file_error", "Could not write to the config.json file.", 400)
 	}
 }
