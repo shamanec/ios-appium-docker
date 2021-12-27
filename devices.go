@@ -135,7 +135,7 @@ func RegisterIOSDevice(w http.ResponseWriter, r *http.Request) {
 
 	// Prettify the json so it looks good inside the file
 	var prettyJSON bytes.Buffer
-	json.Indent(&prettyJSON, []byte(updatedJSON), "", "\t")
+	json.Indent(&prettyJSON, []byte(updatedJSON), "", "  ")
 
 	// Write the new json to the config.json file
 	err = ioutil.WriteFile("./configs/config.json", []byte(prettyJSON.String()), 0644)

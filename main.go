@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 )
 
 // Devices struct which contains
@@ -184,6 +185,31 @@ func InteractDockerFile(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
+func testWS(w http.ResponseWriter, r *http.Request) {
+	conn, _ := upgrader.Upgrade(w, r, nil) // error ignored for sake of simplicity
+
+	for {
+		// Read message from browser
+		msgType, msg, err := conn.ReadMessage()
+		if err != nil {
+			return
+		}
+
+		// Print the message to the console
+		fmt.Printf("%s sent: %s\n", conn.RemoteAddr(), string(msg))
+
+		// Write message back to browser
+		if err = conn.WriteMessage(msgType, msg); err != nil {
+			return
+		}
+	}
+}
+
 func handleRequests() {
 	// Create a new instance of the mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
@@ -198,13 +224,15 @@ func handleRequests() {
 	myRouter.HandleFunc("/androidContainers", getAndroidContainers)
 	myRouter.HandleFunc("/updateConfig", UpdateProjectConfigHandler)
 	myRouter.HandleFunc("/dockerfile", InteractDockerFile)
-	myRouter.HandleFunc("/build-image", BuildDockerImage)
+	myRouter.HandleFunc("/build-image", BuildDockerImage2)
 	myRouter.HandleFunc("/remove-image", RemoveDockerImage)
 	myRouter.HandleFunc("/start-listener-grid", StartListenerGrid)
 	myRouter.HandleFunc("/start-listener-no-grid", StartListenerNoGrid)
 	myRouter.HandleFunc("/stop-listener", StopListener)
 	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
+
+	myRouter.HandleFunc("/ws", testWS)
 
 	// assets
 	myRouter.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static/"))))
