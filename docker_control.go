@@ -183,3 +183,31 @@ func getAndroidContainers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
+
+// Check if the ios-appium image exists and return info string
+func ImageExists() (imageStatus string) {
+	// Create the context and Docker client
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		imageStatus = "Couldn't create Docker client"
+		return
+	}
+
+	// Get the images list
+	imageListResponse, err := cli.ImageList(ctx, types.ImageListOptions{})
+	if err != nil {
+		imageStatus = "Couldn't get Docker images list"
+		return
+	}
+
+	// Loop through the images list and search for the 'ios-appium' image
+	for i := 0; i < len(imageListResponse); i++ {
+		if strings.Contains(imageListResponse[i].RepoTags[0], "ios-appium") {
+			imageStatus = "Image available"
+			return
+		}
+	}
+	imageStatus = "Image not available"
+	return
+}

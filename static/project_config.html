@@ -84,13 +84,19 @@
                         <span class="tooltiptext">The bundle ID of the targetted WDA application.</span>
                     </div>
                 </th>
+                <th>Docker Image Status</th>
+                <th>go-ios listener status</th>
+                <th>Udev iOS listener status</th>
             </tr>
             <tr>
-                <td>{{.DevicesHost}}</td>
-                <td>{{.SeleniumHubHost}}</td>
-                <td>{{.SeleniumHubPort}}</td>
-                <td>{{.SeleniumHubProtocolType}}</td>
-                <td>{{.WdaBundleID}}</td>
+                <td>{{.ProjectConfigValues.DevicesHost}}</td>
+                <td>{{.ProjectConfigValues.SeleniumHubHost}}</td>
+                <td>{{.ProjectConfigValues.SeleniumHubPort}}</td>
+                <td>{{.ProjectConfigValues.SeleniumHubProtocolType}}</td>
+                <td>{{.ProjectConfigValues.WdaBundleID}}</td>
+                <td id="image-status-cell">{{.ImageStatus}}</td>
+                <td id="go-ios-listener-status-cell">{{.GoIOSListenerStatus}}</td>
+                <td id="udev-ios-listener-status-cell">{{.UdevIOSListenerStatus}}</td>
             </tr>
         </table>
     </div>
@@ -213,9 +219,13 @@
                 url: "/stop-listener",
                 success: function (data) {
                     alert(data)
+                    /* Reload the page to get the new info */
+                    location.reload();
                 },
                 error: function (data) {
                     alert(JSON.stringify(data))
+                    /* Reload the page to get the new info */
+                    location.reload();
                 }
             });
 
@@ -241,9 +251,13 @@
                 url: url,
                 success: function (data) {
                     alert(data)
+                    /* Reload the page to get the new info */
+                    location.reload();
                 },
                 error: function (data) {
                     alert(JSON.stringify(data))
+                    /* Reload the page to get the new info */
+                    location.reload();
                 }
             });
 
@@ -337,18 +351,42 @@
             alert("Not implemented")
         }
 
-        // var socket = new WebSocket("ws://localhost:10000/ws");
+        window.addEventListener("DOMContentLoaded", function () {
+            setImageStatusCellBackground()
+            setUdevIOSListenerCellBackground()
+            setGoIOSListenerCellBackground()
+        });
 
-        // socket.onopen = function () {
-        //     alert("Status: Connected\n");
-        // };
+        function setImageStatusCellBackground() {
+            let statusCell = document.getElementById("image-status-cell");
+            if (statusCell.textContent === "Image available") {
+                statusCell.style.backgroundColor = "#4CAF50"
+            } else if (statusCell.textContent === "Image not available") {
+                statusCell.style.backgroundColor = "#eb4f34"
+            } else {
+                statusCell.style.backgroundColor = "#ebe134"
+            }
+        }
 
-        // socket.onmessage = function (e) {
-        //     alert("Server: " + e.data + "\n");
-        // };
-        // function send() {
-        //     socket.send("test");
-        // }
+        function setUdevIOSListenerCellBackground() {
+            let statusCell = document.getElementById("udev-ios-listener-status-cell");
+            if (statusCell.textContent === "Udev rules set.") {
+                statusCell.style.backgroundColor = "#4CAF50"
+            } else if (statusCell.textContent === "Udev rules not set.") {
+                statusCell.style.backgroundColor = "#eb4f34"
+            }
+        }
+
+        function setGoIOSListenerCellBackground() {
+            let statusCell = document.getElementById("go-ios-listener-status-cell");
+            if (statusCell.textContent === "The go-ios listener is running.") {
+                statusCell.style.backgroundColor = "#4CAF50"
+            } else if (statusCell.textContent === "The listener is not running.") {
+                statusCell.style.backgroundColor = "#eb4f34"
+            } else {
+                statusCell.style.backgroundColor = "#ebe134"
+            }
+        }
     </script>
 </body>
 

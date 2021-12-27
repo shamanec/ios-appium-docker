@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 )
 
@@ -61,5 +62,37 @@ func StopListener(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Could not kill the listener.")
 	} else {
 		fmt.Fprintf(w, "Successfully stopped the listener.")
+	}
+}
+
+func GoIOSListenerStatus() (status string) {
+	// Execute the command to restart the container by container ID
+	getPIDcommand := "ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}'"
+	cmd := exec.Command("bash", "-c", getPIDcommand)
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		status = "Couldn't get go-ios listener status."
+		return
+	}
+	if out.String() == "" {
+		status = "The listener is not running."
+		return
+	}
+	status = "The go-ios listener is running."
+	return
+}
+
+func UdevIOSListenerStatus() (status string) {
+	_, firstRuleErr := os.Stat("/etc/udev/rules.d/90-usbmuxd.rules")
+	_, secondRuleErr := os.Stat("/etc/udev/rules.d/90-usbmuxd.rules")
+	if firstRuleErr != nil || secondRuleErr != nil {
+		status = "Udev rules not set."
+		return
+	} else {
+		status = "Udev rules set."
+		return
 	}
 }

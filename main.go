@@ -38,6 +38,13 @@ type ProjectConfig struct {
 	WdaBundleID             string `json:"wda_bundle_id"`
 }
 
+type ProjectConfigPageData struct {
+	GoIOSListenerStatus   string
+	UdevIOSListenerStatus string
+	ImageStatus           string
+	ProjectConfigValues   ProjectConfig
+}
+
 type ContainerRow struct {
 	ContainerID     string
 	ImageName       string
@@ -86,7 +93,8 @@ func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
 
 	// Load the page templating the project config values
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
-	if err := index.Execute(w, configRow); err != nil {
+	pageData := ProjectConfigPageData{GoIOSListenerStatus: GoIOSListenerStatus(), UdevIOSListenerStatus: UdevIOSListenerStatus(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
+	if err := index.Execute(w, pageData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
@@ -224,13 +232,14 @@ func handleRequests() {
 	myRouter.HandleFunc("/androidContainers", getAndroidContainers)
 	myRouter.HandleFunc("/updateConfig", UpdateProjectConfigHandler)
 	myRouter.HandleFunc("/dockerfile", InteractDockerFile)
-	myRouter.HandleFunc("/build-image", BuildDockerImage2)
+	myRouter.HandleFunc("/build-image", BuildDockerImage)
 	myRouter.HandleFunc("/remove-image", RemoveDockerImage)
 	myRouter.HandleFunc("/start-listener-grid", StartListenerGrid)
 	myRouter.HandleFunc("/start-listener-no-grid", StartListenerNoGrid)
 	myRouter.HandleFunc("/stop-listener", StopListener)
 	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
+	//myRouter.HandleFunc("/test", ImageExists2)
 
 	myRouter.HandleFunc("/ws", testWS)
 
