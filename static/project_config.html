@@ -234,6 +234,11 @@
         }
 
         function startListener(gridBool) {
+            var imageStatus = document.getElementById("image-status-cell").getAttribute("value")
+            if (imageStatus === "is-not-available") {
+                alert("The 'ios-appium' Docker image is not available, listener will not be started.")
+                return
+            }
             /* Show loading indicator until response is returned */
             $('#loading').css("visibility", "visible");
 
@@ -361,10 +366,13 @@
             let statusCell = document.getElementById("image-status-cell");
             if (statusCell.textContent === "Image available") {
                 statusCell.style.backgroundColor = "#4CAF50"
+                statusCell.setAttribute("value", "is-available")
             } else if (statusCell.textContent === "Image not available") {
                 statusCell.style.backgroundColor = "#eb4f34"
+                statusCell.setAttribute("value", "is-not-available")
             } else {
                 statusCell.style.backgroundColor = "#ebe134"
+                statusCell.setAttribute("value", "undefined")
             }
         }
 
@@ -372,19 +380,24 @@
             let statusCell = document.getElementById("udev-ios-listener-status-cell");
             if (statusCell.textContent === "Udev rules set.") {
                 statusCell.style.backgroundColor = "#4CAF50"
+                statusCell.setAttribute("value", "is-running")
             } else if (statusCell.textContent === "Udev rules not set.") {
                 statusCell.style.backgroundColor = "#eb4f34"
+                statusCell.setAttribute("value", "is-not-running")
             }
         }
 
         function setGoIOSListenerCellBackground() {
             let statusCell = document.getElementById("go-ios-listener-status-cell");
             if (statusCell.textContent === "The go-ios listener is running.") {
-                statusCell.style.backgroundColor = "#4CAF50"
+                statusCell.style.backgroundColor = "#4CAF50";
+                statusCell.setAttribute("value", "is-running")
             } else if (statusCell.textContent === "The listener is not running.") {
-                statusCell.style.backgroundColor = "#eb4f34"
+                statusCell.style.backgroundColor = "#eb4f34";
+                statusCell.setAttribute("value", "is-not-running")
             } else {
-                statusCell.style.backgroundColor = "#ebe134"
+                statusCell.style.backgroundColor = "#ebe134";
+                statusCell.setAttribute("value", "undefined")
             }
         }
     </script>
