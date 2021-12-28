@@ -9,12 +9,12 @@ import (
 )
 
 func StartListenerGrid(w http.ResponseWriter, r *http.Request) {
-	commandString := "./listener_script.sh"
+	commandString := "nohup ./listener_script.sh"
 	cmd := exec.Command("bash", "-c", commandString)
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Start()
+	// var out bytes.Buffer
+	// cmd.Stdout = &out
+	err := cmd.Run()
 	if err != nil {
 		fmt.Fprintf(w, "Could not start listener script with Selenium Grid.")
 		return
@@ -24,18 +24,32 @@ func StartListenerGrid(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartListenerNoGrid(w http.ResponseWriter, r *http.Request) {
-	commandString := "./listener_script.sh no_grid"
-	cmd := exec.Command("bash", "-c", commandString)
+	commandString := "nohup ./listener_script.sh no_grid"
+	cmd := exec.Command("sh", "-c", commandString)
 
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Start()
+	// var out bytes.Buffer
+	// cmd.Stdout = &out
+	err := cmd.Run()
 	if err != nil {
 		fmt.Fprintf(w, "Could not start listener script without Selenium Grid.")
 		return
 	}
 
 	fmt.Fprintf(w, "Started listener script without Selenium Grid.")
+}
+
+func StartListenerNoGridLocal() {
+	commandString := "nohup ./listener_script.sh no_grid"
+	cmd := exec.Command("sh", "-c", commandString)
+
+	// var out bytes.Buffer
+	// cmd.Stdout = &out
+	err := cmd.Run()
+	if err != nil {
+		fmt.Printf("Could not start listener script without Selenium Grid.")
+		return
+	}
+	fmt.Printf("Started listener script without Selenium Grid.")
 }
 
 func StopListener(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +76,7 @@ func StopListener(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GoIOSListenerStatus() (status string) {
+func GoIOSListenerState() (statusText string) {
 	getPIDcommand := "ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}'"
 	cmd := exec.Command("bash", "-c", getPIDcommand)
 
@@ -70,18 +84,18 @@ func GoIOSListenerStatus() (status string) {
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		status = "Couldn't get go-ios listener status."
+		statusText = "Couldn't get go-ios listener status."
 		return
 	}
 	if out.String() == "" {
-		status = "The listener is not running."
+		statusText = "The listener is not running."
 		return
 	}
-	status = "The go-ios listener is running."
+	statusText = "The go-ios listener is running."
 	return
 }
 
-func UdevIOSListenerStatus() (status string) {
+func UdevIOSListenerState() (status string) {
 	_, firstRuleErr := os.Stat("/etc/udev/rules.d/90-usbmuxd.rules")
 	_, secondRuleErr := os.Stat("/etc/udev/rules.d/90-usbmuxd.rules")
 	if firstRuleErr != nil || secondRuleErr != nil {

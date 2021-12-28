@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/tidwall/gjson"
 )
 
 // Devices struct which contains
@@ -82,7 +83,7 @@ func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
 		WdaBundleID:             projectConfig.WdaBundleID}
 
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
-	pageData := ProjectConfigPageData{GoIOSListenerStatus: GoIOSListenerStatus(), UdevIOSListenerStatus: UdevIOSListenerStatus(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
+	pageData := ProjectConfigPageData{GoIOSListenerStatus: GoIOSListenerState(), UdevIOSListenerStatus: UdevIOSListenerState(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
 	if err := index.Execute(w, pageData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -193,6 +194,30 @@ func testWS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func startListener() {
+	// Open the configuration json file
+	jsonFile, err := os.Open("./configs/test.json")
+	if err != nil {
+		panic(err)
+	}
+	defer jsonFile.Close()
+
+	// Read the configuration json file into byte array
+	configJson, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		panic(err)
+	}
+	// Get the UDIDs of all devices registered in the config.json
+	listener_started := gjson.Get(string(configJson), "go_ios_listener_started")
+	appium_grid := gjson.Get(string(configJson), "appium_grid")
+
+	if GoIOSListenerState() == "The listener is not running." && listener_started.Str == "true" {
+		if appium_grid.Str == "no-grid" {
+			StartListenerNoGridLocal()
+		}
+	}
+}
+
 func handleRequests() {
 	// Create a new instance of the mux router
 	myRouter := mux.NewRouter().StrictSlash(true)
@@ -214,7 +239,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/stop-listener", StopListener)
 	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
-	//myRouter.HandleFunc("/test", ImageExists2)
+	myRouter.HandleFunc("/test", createUdevRules)
 
 	myRouter.HandleFunc("/ws", testWS)
 
@@ -231,5 +256,6 @@ func handleRequests() {
 }
 
 func main() {
+	startListener()
 	handleRequests()
 }

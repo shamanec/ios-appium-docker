@@ -5,8 +5,12 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
+	"os/user"
+
+	"github.com/tidwall/gjson"
 )
 
 // Create a tar archive from an array of files while preserving directory structure
@@ -95,4 +99,47 @@ func JSONError(w http.ResponseWriter, error_code string, error_string string, co
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errorMessage)
+}
+
+func createUdevRules(w http.ResponseWriter, r *http.Request) {
+	create_container_rules, err := os.Create("./90-usbmuxd.rules")
+	if err != nil {
+		JSONError(w, "udev_rule_error", "Could not create 90-usbmuxd.rules", 500)
+	}
+	defer create_container_rules.Close()
+	start_usbmuxd_rule, err := os.Create("./39-usbmuxd.rules")
+	if err != nil {
+		JSONError(w, "udev_rule_error", "Could not create 90-usbmuxd.rules", 500)
+	}
+	defer start_usbmuxd_rule.Close()
+	// Open the configuration json file
+	jsonFile, err := os.Open("./configs/config.json")
+	if err != nil {
+		JSONError(w, "config_file_error", "Could not open the config.json file.", 500)
+	}
+	defer jsonFile.Close()
+
+	// Read the configuration json file into byte array
+	configJson, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		JSONError(w, "config_file_error", "Could not read the config.json file.", 500)
+	}
+
+	// Get the UDIDs of all devices registered in the config.json
+	jsonDevicesUDIDs := gjson.Get(string(configJson), "devicesList.#.device_udid")
+
+	current_user, err := user.Current()
+
+	// For each udid create a new line inside the 90-usbmuxd.rules file
+	for _, udid := range jsonDevicesUDIDs.Array() {
+		rule_line := "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"" + udid.Str + "\", OWNER=\"" + current_user.Username + "\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker " + udid.Str + "\""
+		if _, err := create_container_rules.WriteString(rule_line + "\n"); err != nil {
+			JSONError(w, "udev_rule_error", "Could not write to 90-usbmuxd.rules", 500)
+		}
+	}
+
+	// Update the container removal rule
+	if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"" + current_user.Username + "\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -u -v -z\""); err != nil {
+		JSONError(w, "udev_rule_error", "Could not write to 90-usbmuxd.rules", 500)
+	}
 }
