@@ -15,7 +15,6 @@ func StartListenerGrid(w http.ResponseWriter, r *http.Request) {
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Start()
-	cmd.
 	if err != nil {
 		fmt.Fprintf(w, "Could not start listener script with Selenium Grid.")
 		return
