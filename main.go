@@ -64,26 +64,16 @@ func GetInitialPage(w http.ResponseWriter, r *http.Request) {
 
 // Load the initial page with the project configuration info
 func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
-	// Open the config jsonFile
 	jsonFile, err := os.Open("./configs/config.json")
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
-	// Read the JSON file
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	// initialize the devices array
 	var projectConfig ProjectConfig
-
-	// unmarshal our byteArray which contains our
-	// jsonFile's content into 'projectConfig' which is defined above
 	json.Unmarshal(byteValue, &projectConfig)
-
-	// Create the config row that will provide the data to the templated table
 	var configRow = ProjectConfig{
 		DevicesHost:             projectConfig.DevicesHost,
 		SeleniumHubHost:         projectConfig.SeleniumHubHost,
@@ -91,7 +81,6 @@ func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
 		SeleniumHubProtocolType: projectConfig.SeleniumHubProtocolType,
 		WdaBundleID:             projectConfig.WdaBundleID}
 
-	// Load the page templating the project config values
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
 	pageData := ProjectConfigPageData{GoIOSListenerStatus: GoIOSListenerStatus(), UdevIOSListenerStatus: UdevIOSListenerStatus(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
 	if err := index.Execute(w, pageData); err != nil {
@@ -107,25 +96,19 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-
-	// Open our jsonFile
 	jsonFile, err := os.Open("./configs/config.json")
-	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
-	// Read the json file
 	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	// Unmarshal the JSON file
 	var result map[string]interface{}
 	err = json.Unmarshal(byteValue, &result)
 	if err != nil {
@@ -149,13 +132,11 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 		result["wda_bundle_id"] = request_config.WdaBundleID
 	}
 
-	// Marshal  the new json
 	byteValue, err = json.Marshal(result)
 	if err != nil {
 		panic(err)
 	}
 
-	// Write the new json to the config.json file
 	err = ioutil.WriteFile("./configs/config.json", byteValue, 0644)
 	if err != nil {
 		panic(err)
@@ -165,26 +146,20 @@ func UpdateProjectConfigHandler(w http.ResponseWriter, r *http.Request) {
 func InteractDockerFile(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case "GET":
-		// Open our Dockerfile
 		dockerfile, err := os.Open("./Dockerfile")
-		// if we os.Open returns an error then handle it
 		if err != nil {
 			fmt.Println(err)
 		}
-		// defer the closing of our jsonFile so that we can parse it later on
 		defer dockerfile.Close()
 
 		byteValue, _ := ioutil.ReadAll(dockerfile)
 
 		fmt.Fprintf(w, string(byteValue))
 	case "POST":
-		// Open our Dockerfile
 		dockerfile, err := os.Open("./Dockerfile")
-		// if we os.Open returns an error then handle it
 		if err != nil {
 			fmt.Println(err)
 		}
-		// defer the closing of our jsonFile so that we can parse it later on
 		defer dockerfile.Close()
 
 		byteValue, _ := ioutil.ReadAll(dockerfile)

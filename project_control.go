@@ -9,13 +9,13 @@ import (
 )
 
 func StartListenerGrid(w http.ResponseWriter, r *http.Request) {
-	// Execute the command to restart the container by container ID
 	commandString := "./listener_script.sh"
 	cmd := exec.Command("bash", "-c", commandString)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := cmd.Run()
+	err := cmd.Start()
+	cmd.
 	if err != nil {
 		fmt.Fprintf(w, "Could not start listener script with Selenium Grid.")
 		return
@@ -25,13 +25,12 @@ func StartListenerGrid(w http.ResponseWriter, r *http.Request) {
 }
 
 func StartListenerNoGrid(w http.ResponseWriter, r *http.Request) {
-	// Execute the command to restart the container by container ID
 	commandString := "./listener_script.sh no_grid"
 	cmd := exec.Command("bash", "-c", commandString)
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
-	err := cmd.Run()
+	err := cmd.Start()
 	if err != nil {
 		fmt.Fprintf(w, "Could not start listener script without Selenium Grid.")
 		return
@@ -41,7 +40,6 @@ func StartListenerNoGrid(w http.ResponseWriter, r *http.Request) {
 }
 
 func StopListener(w http.ResponseWriter, r *http.Request) {
-	// Execute the command to restart the container by container ID
 	getPIDcommand := "ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}'"
 	cmd := exec.Command("bash", "-c", getPIDcommand)
 
@@ -66,7 +64,6 @@ func StopListener(w http.ResponseWriter, r *http.Request) {
 }
 
 func GoIOSListenerStatus() (status string) {
-	// Execute the command to restart the container by container ID
 	getPIDcommand := "ps aux | grep './listener_script.sh' | grep -v grep | awk '{print $2}'"
 	cmd := exec.Command("bash", "-c", getPIDcommand)
 
