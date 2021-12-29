@@ -115,7 +115,7 @@ func SetFilePermissionsShell(filePath string, permissionsCode string, sudoPasswo
 	cmd := exec.Command("bash", "-c", commandString)
 	err := cmd.Run()
 	if err != nil {
-		return errors.New("Could not set " + permissionsCode + " permissions to file at path: " + filePath + "\n")
+		return errors.New("Could not set " + permissionsCode + " permissions to file at path: " + filePath + "\n" + err.Error())
 	}
 	return nil
 }

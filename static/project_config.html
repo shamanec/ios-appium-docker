@@ -94,6 +94,11 @@
                         <span class="tooltiptext">Shows if the the udev rules are added in '/etc/udev/rules.d/' and 'ios_device2docker' is added in '/usr/local/bin/'</span>
                     </div>
                 </th>
+                <th>Sudo password set
+                    <div class="tooltip">?
+                        <span class="tooltiptext">Shows if the current user sudo password is provided in the '.config.yaml' file.</span>
+                    </div>
+                </th>
             </tr>
             <tr>
                 <td>{{.ProjectConfigValues.DevicesHost}}</td>
@@ -103,6 +108,7 @@
                 <td>{{.ProjectConfigValues.WdaBundleID}}</td>
                 <td id="image-status-cell">{{.ImageStatus}}</td>
                 <td id="udev-ios-listener-status-cell">{{.UdevIOSListenerStatus}}</td>
+                <td id="sudo-password-cell">{{.SudoPasswordSet}}</td>
             </tr>
         </table>
     </div>
@@ -213,6 +219,11 @@
         }
 
         function removeUdevListener() {
+            var sudoPasswordStatus = document.getElementById("sudo-password-cell").getAttribute("value")
+            if (sudoPasswordStatus === "false") {
+                alert("Elevated permissions are needed to perform this action. Please set your user sudo password in the '.config.yaml' file.")
+                return
+            }
             /* Show loading indicator until response is returned */
             $('#loading').css("visibility", "visible");
 
@@ -239,6 +250,11 @@
         }
 
         function setupUdevListener(gridBool) {
+            var sudoPasswordStatus = document.getElementById("sudo-password-cell").getAttribute("value")
+            if (sudoPasswordStatus === "false") {
+                alert("Elevated permissions are needed to perform this action. Please set your user sudo password in the '.config.yaml' file.")
+                return
+            }
             var imageStatus = document.getElementById("image-status-cell").getAttribute("value")
             if (imageStatus === "is-not-available") {
                 alert("The 'ios-appium' Docker image is not available, listener will not be started.")
@@ -364,7 +380,7 @@
         window.addEventListener("DOMContentLoaded", function () {
             setImageStatusCellBackground()
             setUdevIOSListenerCellBackground()
-            setGoIOSListenerCellBackground()
+            setSudoPasswordCellBackground()
         });
 
         function setImageStatusCellBackground() {
@@ -389,6 +405,17 @@
             } else if (statusCell.textContent === "Udev rules not set.") {
                 statusCell.style.backgroundColor = "#eb4f34"
                 statusCell.setAttribute("value", "is-not-running")
+            }
+        }
+
+        function setSudoPasswordCellBackground() {
+            let statusCell = document.getElementById("sudo-password-cell")
+            if (statusCell.textContent === "true") {
+                statusCell.style.backgroundColor = "#4CAF50"
+                statusCell.setAttribute("value", "true")
+            } else {
+                statusCell.style.backgroundColor = "#eb4f34"
+                statusCell.setAttribute("value", "false")
             }
         }
     </script>

@@ -11,6 +11,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
+	"github.com/spf13/viper"
 )
 
 // Devices struct which contains
@@ -39,6 +40,7 @@ type ProjectConfig struct {
 }
 
 type ProjectConfigPageData struct {
+	SudoPasswordSet       bool
 	UdevIOSListenerStatus string
 	ImageStatus           string
 	ProjectConfigValues   ProjectConfig
@@ -81,7 +83,7 @@ func GetProjectConfigurationPage(w http.ResponseWriter, r *http.Request) {
 		WdaBundleID:             projectConfig.WdaBundleID}
 
 	var index = template.Must(template.ParseFiles("static/project_config.html"))
-	pageData := ProjectConfigPageData{UdevIOSListenerStatus: UdevIOSListenerState(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
+	pageData := ProjectConfigPageData{SudoPasswordSet: CheckSudoPasswordSet(), UdevIOSListenerStatus: UdevIOSListenerState(), ImageStatus: ImageExists(), ProjectConfigValues: configRow}
 	if err := index.Execute(w, pageData); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -212,7 +214,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/remove-udev-listener", RemoveUdevRules)
 	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
-	//myRouter.HandleFunc("/test", createUdevRules)
+	//myRouter.HandleFunc("/test", GetSudoPassword)
 
 	myRouter.HandleFunc("/ws", testWS)
 
@@ -229,5 +231,10 @@ func handleRequests() {
 }
 
 func main() {
+	// Read project config
+	viper.SetConfigName(".config.yaml")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath(".")
+	viper.ReadInConfig()
 	handleRequests()
 }
