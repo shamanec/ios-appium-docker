@@ -11,7 +11,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
-	"github.com/spf13/viper"
 )
 
 // Devices struct which contains
@@ -214,7 +213,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/remove-udev-listener", RemoveUdevRules)
 	myRouter.HandleFunc("/ios-devices", GetConnectedIOSDevices)
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
-	//myRouter.HandleFunc("/test", GetSudoPassword)
+	myRouter.HandleFunc("/set-sudo-password", SetSudoPassword)
 
 	myRouter.HandleFunc("/ws", testWS)
 
@@ -231,10 +230,5 @@ func handleRequests() {
 }
 
 func main() {
-	// Read project config
-	viper.SetConfigName(".config.yaml")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath(".")
-	viper.ReadInConfig()
 	handleRequests()
 }

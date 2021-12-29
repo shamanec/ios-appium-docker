@@ -43,6 +43,12 @@
             <button id="add-device-button" type="button" onclick="registerIOSDevice()">Add device</button>
         </div>
     </div>
+    <div class="modal fade" id="sudo-password-input-modal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div>
+            <input id="sudo-password-input" type="text"></input>
+            <button id="submit-sudo-password" type="button" onclick="setSudoPassword()">Submit password</button>
+        </div>
+    </div>
     <div class="topnav">
         <link href="/static/css/top_navigation_style.css" rel="stylesheet">
         <a href="/">Home</a>
@@ -91,12 +97,14 @@
                 </th>
                 <th>Udev iOS listener status
                     <div class="tooltip">?
-                        <span class="tooltiptext">Shows if the the udev rules are added in '/etc/udev/rules.d/' and 'ios_device2docker' is added in '/usr/local/bin/'</span>
+                        <span class="tooltiptext">Shows if the the udev rules are added in '/etc/udev/rules.d/' and
+                            'ios_device2docker' is added in '/usr/local/bin/'</span>
                     </div>
                 </th>
                 <th>Sudo password set
                     <div class="tooltip">?
-                        <span class="tooltiptext">Shows if the current user sudo password is provided in the '.config.yaml' file.</span>
+                        <span class="tooltiptext">Shows if the current user sudo password is provided in the
+                            '.config.yaml' file.</span>
                     </div>
                 </th>
             </tr>
@@ -121,14 +129,17 @@
             image</button>
         <button class="config-button" id="config-button" type="button" onclick="removeImage()">Remove Docker
             image</button>
-        <button class="config-button" id="config-button" type="button" onclick="setupUdevListener(true)">Setup udev listener -
+        <button class="config-button" id="config-button" type="button" onclick="setupUdevListener(true)">Setup udev
+            listener -
             Grid</button>
         <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup udev listener -
             No Grid</button>
-        <button class="config-button" id="config-button" type="button" onclick="removeUdevListener()">Remove udev listener</button>
+        <button class="config-button" id="config-button" type="button" onclick="removeUdevListener()">Remove udev
+            listener</button>
         <button class="config-button" id="config-button" type="button" onclick="showIOSDeviceSelection()">Add a
             device</button>
-        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup Developer Disk Images</button>
+        <button class="config-button" id="config-button" type="button" onclick="showSudoPasswordInput()">Set sudo
+            password</button>
         <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Remove udev
             listener</button>
     </div>
@@ -359,6 +370,48 @@
                 error: function (data) {
                     alert($.parseJSON(data.responseText).error_message)
                     modal.style.display = "none";
+                }
+            });
+        }
+
+        function showSudoPasswordInput() {
+
+            var modal = document.getElementById("sudo-password-input-modal")
+
+            /* Display the modal blocking interaction */
+            modal.style.display = "block";
+
+            /* Close the modal if you click anywhere outside the modal */
+            window.onclick = function (event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
+        }
+
+        function setSudoPassword() {
+            var modal = document.getElementById("sudo-password-input-modal")
+            var sudo_password = $("#sudo-password-input").val();
+            if (sudo_password === "") {
+                alert("Please provide a non-empty value for the sudo password.")
+                return
+            }
+            // Send a request to register the device with the respective selected device UDID
+            $.ajax({
+                contentType: 'application/json',
+                async: true,
+                type: "POST",
+                data: JSON.stringify({ "sudo_password": sudo_password }),
+                url: "/set-sudo-password",
+                success: function (data) {
+                    alert("Successfully set sudo password")
+                    modal.style.display = "none";
+                    location.reload()
+                },
+                error: function (data) {
+                    alert("Couldn't set sudo password")
+                    modal.style.display = "none";
+                    location.reload()
                 }
             });
         }

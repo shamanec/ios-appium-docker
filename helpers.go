@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
@@ -134,4 +135,22 @@ func JSONError(w http.ResponseWriter, error_code string, error_string string, co
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(errorMessage)
+}
+
+func ReadJSONFile(jsonFilePath string) ([]byte, error) {
+	// Open the env.json
+	jsonFile, err := os.Open(jsonFilePath)
+
+	// if os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	} else {
+		return byteValue, nil
+	}
 }

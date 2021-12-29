@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -10,7 +12,10 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/sjson"
 )
+
+var sudo_password = viper.GetString("sudo_password")
 
 func SetupUdevListener(w http.ResponseWriter, r *http.Request) {
 	DeleteTempUdevFiles()
@@ -37,9 +42,9 @@ func SetupUdevListener(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTempUdevFiles() {
-	DeleteFileShell("./90-usbmuxd.rules", viper.GetString("sudo_password"))
-	DeleteFileShell("./39-usbmuxd.rules", viper.GetString("sudo_password"))
-	DeleteFileShell("./ios_device2docker", viper.GetString("sudo_password"))
+	DeleteFileShell("./90-usbmuxd.rules", sudo_password)
+	DeleteFileShell("./39-usbmuxd.rules", sudo_password)
+	DeleteFileShell("./ios_device2docker", sudo_password)
 }
 
 func UdevIOSListenerState() (status string) {
@@ -92,7 +97,7 @@ func CreateUdevRules() error {
 	}
 
 	// Update the rule that starts usbmuxd
-	if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"shamanec\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -u -v -z\""); err != nil {
+	if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"root\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -U shamanec -u -v -z\""); err != nil {
 		return errors.New("Could not write to 39-usbmuxd.rules")
 	}
 	return nil
@@ -114,23 +119,23 @@ func CreateDevice2DockerFile() error {
 }
 
 func SetUdevRules() error {
-	err := CopyFileShell("./90-usbmuxd.rules", "/etc/udev/rules.d/90-usbmuxd.rules", viper.GetString("sudo_password"))
+	err := CopyFileShell("./90-usbmuxd.rules", "/etc/udev/rules.d/90-usbmuxd.rules", sudo_password)
 	if err != nil {
 		return err
 	}
-	err = CopyFileShell("./39-usbmuxd.rules", "/etc/udev/rules.d/39-usbmuxd.rules", viper.GetString("sudo_password"))
+	err = CopyFileShell("./39-usbmuxd.rules", "/etc/udev/rules.d/39-usbmuxd.rules", sudo_password)
 	if err != nil {
 		return err
 	}
-	err = CopyFileShell("./ios_device2docker", "/usr/local/bin/ios_device2docker", viper.GetString("sudo_password"))
+	err = CopyFileShell("./ios_device2docker", "/usr/local/bin/ios_device2docker", sudo_password)
 	if err != nil {
 		return err
 	}
-	err = SetFilePermissionsShell("/usr/local/bin/ios_device2docker", "0777", viper.GetString("sudo_password"))
+	err = SetFilePermissionsShell("/usr/local/bin/ios_device2docker", "0777", sudo_password)
 	if err != nil {
 		return err
 	}
-	commandString := "echo '" + viper.GetString("sudo_password") + "' | sudo -S udevadm control --reload-rules"
+	commandString := "echo '" + sudo_password + "' | sudo -S udevadm control --reload-rules"
 	cmd := exec.Command("bash", "-c", commandString)
 	err = cmd.Run()
 	if err != nil {
@@ -140,19 +145,19 @@ func SetUdevRules() error {
 }
 
 func RemoveUdevRules(w http.ResponseWriter, r *http.Request) {
-	err := DeleteFileShell("/etc/udev/rules.d/90-usbmuxd.rules", viper.GetString("sudo_password"))
+	err := DeleteFileShell("/etc/udev/rules.d/90-usbmuxd.rules", sudo_password)
 	if err != nil {
 		JSONError(w, "delete_file_error", err.Error(), 500)
 	}
-	err = DeleteFileShell("/etc/udev/rules.d/39-usbmuxd.rules", viper.GetString("sudo_password"))
+	err = DeleteFileShell("/etc/udev/rules.d/39-usbmuxd.rules", sudo_password)
 	if err != nil {
 		JSONError(w, "delete_file_error", err.Error(), 500)
 	}
-	err = DeleteFileShell("/usr/local/bin/ios_device2docker", viper.GetString("sudo_password"))
+	err = DeleteFileShell("/usr/local/bin/ios_device2docker", sudo_password)
 	if err != nil {
 		JSONError(w, "delete_file_error", err.Error(), 500)
 	}
-	commandString := "echo '" + viper.GetString("sudo_password") + "' | sudo -S udevadm control --reload-rules"
+	commandString := "echo '" + sudo_password + "' | sudo -S udevadm control --reload-rules"
 	cmd := exec.Command("bash", "-c", commandString)
 	err = cmd.Run()
 	if err != nil {
@@ -161,9 +166,34 @@ func RemoveUdevRules(w http.ResponseWriter, r *http.Request) {
 }
 
 func CheckSudoPasswordSet() bool {
-	sudo_password := viper.GetString("sudo_password")
-	if sudo_password == "" {
+	byteValue, err := ReadJSONFile("./env.json")
+	if err != nil {
+		return false
+	}
+	sudo_password := gjson.Get(string(byteValue), "sudo_password").Str
+	if sudo_password == "undefined" {
 		return false
 	}
 	return true
+}
+
+func SetSudoPassword(w http.ResponseWriter, r *http.Request) {
+	requestBody, _ := ioutil.ReadAll(r.Body)
+	sudo_password := gjson.Get(string(requestBody), "sudo_password").Str
+	byteValue, err := ReadJSONFile("./env.json")
+	if err != nil {
+		fmt.Errorf(err.Error())
+	}
+	updatedJSON, _ := sjson.Set(string(byteValue), "sudo_password", sudo_password)
+
+	// Prettify the json so it looks good inside the file
+	var prettyJSON bytes.Buffer
+	json.Indent(&prettyJSON, []byte(updatedJSON), "", "  ")
+
+	// Write the new json to the config.json file
+	err = ioutil.WriteFile("./env.json", []byte(prettyJSON.String()), 0644)
+	if err != nil {
+		JSONError(w, "env_file_error", "Could not write to the env.json file.", 400)
+	}
+
 }
