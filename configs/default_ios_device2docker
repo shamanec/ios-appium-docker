@@ -86,7 +86,7 @@ then
     #If there is no connected device with corresponding udid to the container - remove the container
     if [[ ! "${udids_array[*]}" == "$udid_from_container" ]]
     then
-      cho "Deleting container: $container"
+      echo "Deleting container: $container"
       delete_container $container
     fi
   done

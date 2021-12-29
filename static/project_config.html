@@ -84,9 +84,16 @@
                         <span class="tooltiptext">The bundle ID of the targetted WDA application.</span>
                     </div>
                 </th>
-                <th>Docker Image Status</th>
-                <th>go-ios listener status</th>
-                <th>Udev iOS listener status</th>
+                <th>Docker Image Status
+                    <div class="tooltip">?
+                        <span class="tooltiptext">Shows if the 'ios-appium' Docker image is built and available.</span>
+                    </div>
+                </th>
+                <th>Udev iOS listener status
+                    <div class="tooltip">?
+                        <span class="tooltiptext">Shows if the the udev rules are added in '/etc/udev/rules.d/' and 'ios_device2docker' is added in '/usr/local/bin/'</span>
+                    </div>
+                </th>
             </tr>
             <tr>
                 <td>{{.ProjectConfigValues.DevicesHost}}</td>
@@ -95,7 +102,6 @@
                 <td>{{.ProjectConfigValues.SeleniumHubProtocolType}}</td>
                 <td>{{.ProjectConfigValues.WdaBundleID}}</td>
                 <td id="image-status-cell">{{.ImageStatus}}</td>
-                <td id="go-ios-listener-status-cell">{{.GoIOSListenerStatus}}</td>
                 <td id="udev-ios-listener-status-cell">{{.UdevIOSListenerStatus}}</td>
             </tr>
         </table>
@@ -109,15 +115,14 @@
             image</button>
         <button class="config-button" id="config-button" type="button" onclick="removeImage()">Remove Docker
             image</button>
-        <button class="config-button" id="config-button" type="button" onclick="startListener(true)">Start listener -
+        <button class="config-button" id="config-button" type="button" onclick="setupUdevListener(true)">Setup udev listener -
             Grid</button>
-        <button class="config-button" id="config-button" type="button" onclick="startListener(false)">Start listener -
+        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup udev listener -
             No Grid</button>
-        <button class="config-button" id="config-button" type="button" onclick="stopListener()">Stop listener</button>
+        <button class="config-button" id="config-button" type="button" onclick="removeUdevListener()">Remove udev listener</button>
         <button class="config-button" id="config-button" type="button" onclick="showIOSDeviceSelection()">Add a
             device</button>
-        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup udev
-            listener</button>
+        <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Setup Developer Disk Images</button>
         <button class="config-button" id="config-button" type="button" onclick="notImplemented()">Remove udev
             listener</button>
     </div>
@@ -207,7 +212,7 @@
             $('#loading').css("visibility", "hidden");
         }
 
-        function stopListener() {
+        function removeUdevListener() {
             /* Show loading indicator until response is returned */
             $('#loading').css("visibility", "visible");
 
@@ -216,7 +221,7 @@
                 dataType: false,
                 async: true,
                 type: "GET",
-                url: "/stop-listener",
+                url: "/remove-udev-listener",
                 success: function (data) {
                     alert(data)
                     /* Reload the page to get the new info */
@@ -233,7 +238,7 @@
             $('#loading').css("visibility", "hidden");
         }
 
-        function startListener(gridBool) {
+        function setupUdevListener(gridBool) {
             var imageStatus = document.getElementById("image-status-cell").getAttribute("value")
             if (imageStatus === "is-not-available") {
                 alert("The 'ios-appium' Docker image is not available, listener will not be started.")
@@ -243,9 +248,9 @@
             $('#loading').css("visibility", "visible");
 
             if (gridBool) {
-                url = "/start-listener-grid"
+                url = "/setup-udev-listener"
             } else {
-                url = "/start-listener-no-grid"
+                url = "/setup-udev-listener"
             }
 
             /* Call the endpoint that will start the respective listener config */
@@ -384,20 +389,6 @@
             } else if (statusCell.textContent === "Udev rules not set.") {
                 statusCell.style.backgroundColor = "#eb4f34"
                 statusCell.setAttribute("value", "is-not-running")
-            }
-        }
-
-        function setGoIOSListenerCellBackground() {
-            let statusCell = document.getElementById("go-ios-listener-status-cell");
-            if (statusCell.textContent === "The go-ios listener is running.") {
-                statusCell.style.backgroundColor = "#4CAF50";
-                statusCell.setAttribute("value", "is-running")
-            } else if (statusCell.textContent === "The listener is not running.") {
-                statusCell.style.backgroundColor = "#eb4f34";
-                statusCell.setAttribute("value", "is-not-running")
-            } else {
-                statusCell.style.backgroundColor = "#ebe134";
-                statusCell.setAttribute("value", "undefined")
             }
         }
     </script>

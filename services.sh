@@ -144,6 +144,8 @@ generate_ios_device2docker() {
 copy_and_reload_udev_rules() {
   sudo cp 90-usbmuxd.rules /etc/udev/rules.d/
   sudo cp 39-usbmuxd.rules /etc/udev/rules.d/
+  sudo chmod 755 /etc/udev/rules.d/90-usbmuxd.rules
+  sudo chmod 755 /etc/udev/rules.d/39-usbmuxd.rules
   sudo udevadm control --reload-rules
   rm 90-usbmuxd.rules
   rm 39-usbmuxd.rules
@@ -155,7 +157,7 @@ setup_udev() {
   create_usbmuxd_rule
   copy_and_reload_udev_rules
   generate_ios_device2docker
-  sudo cp ios_device2docker /usr/local/bin/ && chmod 755 /usr/local/bin/ios_device2docker
+  sudo cp ios_device2docker /usr/local/bin/ && sudo chmod 755 /usr/local/bin/ios_device2docker
   rm ios_device2docker
 }
 

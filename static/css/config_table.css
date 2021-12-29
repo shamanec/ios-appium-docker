@@ -4,7 +4,7 @@ body {
     text-align: center;
 }
 
-table,td,th {
+table, td, th {
     border: 1px solid #ddd;
     text-align: center;
 }
@@ -16,7 +16,7 @@ table {
     margin-right: auto;
 }
 
-th,td {
+th, td {
     padding: 15px;
 }
 
@@ -25,26 +25,30 @@ th,td {
     display: inline-block;
     border-bottom: 1px dotted black;
     cursor: pointer;
-  }
-  
-  .tooltip .tooltiptext {
+}
+
+.tooltip .tooltiptext {
     visibility: hidden;
-    width: 120px;
+    width: 150px;
     background-color: black;
     color: #fff;
     text-align: center;
-    border-radius: 6px;
-    padding: 5px 0;
-  
+    border-radius: 4px;
+    padding: 5px 5px;
+
     /* Position the tooltip */
     position: absolute;
     z-index: 1;
-  }
-  
-  .tooltip:hover .tooltiptext {
-    visibility: visible;
-  }
+    top: 25px;
+    left: 50%;
+    transform:translateX(-50%);
+}
 
-  #config-submit {
-      cursor: pointer;
-  }
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    display:block;
+}
+
+#config-submit {
+    cursor: pointer;
+}
