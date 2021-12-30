@@ -10,12 +10,11 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/spf13/viper"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
 )
 
-var sudo_password = viper.GetString("sudo_password")
+var sudo_password = GetEnvValue("sudo_password")
 
 func SetupUdevListener(w http.ResponseWriter, r *http.Request) {
 	DeleteTempUdevFiles()
@@ -90,14 +89,20 @@ func CreateUdevRules() error {
 
 	// For each udid create a new line inside the 90-usbmuxd.rules file
 	for _, udid := range jsonDevicesUDIDs.Array() {
-		rule_line := "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"" + udid.Str + "\", OWNER=\"root\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker " + udid.Str + "\""
-		if _, err := create_container_rules.WriteString(rule_line + "\n"); err != nil {
+		rule_line1 := "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"" + udid.Str + "\", OWNER=\"shamanec\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker " + udid.Str + "\""
+		rule_line2 := "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", ACTION==\"remove\", RUN+=\"/usr/local/bin/ios_device2docker\""
+		if _, err := create_container_rules.WriteString(rule_line1 + "\n"); err != nil {
+			return errors.New("Could not write to 90-usbmuxd.rules")
+		}
+
+		if _, err := create_container_rules.WriteString(rule_line2 + "\n"); err != nil {
 			return errors.New("Could not write to 90-usbmuxd.rules")
 		}
 	}
 
 	// Update the rule that starts usbmuxd
-	if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"root\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -U shamanec -u -v -z\""); err != nil {
+	// if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"shamanec\", ACTION==\"add\", RUN+=\"/usr/local/sbin/usbmuxd -u -v -z -U shamanec\""); err != nil {
+	if _, err := start_usbmuxd_rule.WriteString("SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"shamanec\", ACTION==\"add\", RUN+=\"/bin/sleep 5\""); err != nil {
 		return errors.New("Could not write to 39-usbmuxd.rules")
 	}
 	return nil
@@ -196,4 +201,10 @@ func SetSudoPassword(w http.ResponseWriter, r *http.Request) {
 		JSONError(w, "env_file_error", "Could not write to the env.json file.", 400)
 	}
 
+}
+
+func GetEnvValue(key string) string {
+	byteValue, _ := ReadJSONFile("./env.json")
+	value := gjson.Get(string(byteValue), key).Str
+	return value
 }

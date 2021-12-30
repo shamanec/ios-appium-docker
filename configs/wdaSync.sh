@@ -98,6 +98,7 @@ export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 if [ ${ON_GRID} == "true" ]; then
   ./opt/nodeconfiggen.sh >/opt/nodeconfig.json
 fi
+touch /opt/logs/wdaSync.txt
 mount-disk-images >>"/opt/logs/wdaSync.txt"
 while true; do
   check-wda-status >>"/opt/logs/wdaSync.txt"

@@ -14,7 +14,10 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
+	"github.com/docker/go-connections/nat"
 	"github.com/gorilla/mux"
 )
 
@@ -210,4 +213,76 @@ func ImageExists() (imageStatus string) {
 	}
 	imageStatus = "Image not available"
 	return
+}
+
+// Restart docker container
+func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
+	// vars := mux.Vars(r)
+	// key := vars["device_udid"]
+
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv)
+	if err != nil {
+		panic(err)
+	}
+
+	config := &container.Config{
+		Image: "ios-appium",
+		ExposedPorts: nat.PortSet{
+			"4843":  struct{}{},
+			"20103": struct{}{},
+			"20003": struct{}{},
+		},
+		Env: []string{"ON_GRID=false", "DEVICE_UDID=00008030-000418C136FB802E", "WDA_PORT=20003", "MJPEG_PORT=20103", "APPIUM_PORT=4843", "DEVICE_OS_VERSION=15.0", "DEVICE_NAME=iPhone_SE", "WDA_BUNDLEID=com.shamanec.WebDriverAgentRunner.xctrunner"},
+	}
+
+	host_config := &container.HostConfig{
+		PortBindings: nat.PortMap{
+			"4843": []nat.PortBinding{
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: "4843",
+				},
+			},
+			"20103": []nat.PortBinding{
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: "20103",
+				},
+			},
+			"20003": []nat.PortBinding{
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: "20003",
+				},
+			},
+		},
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: "/var/run/usbmuxd",
+				Target: "/var/run/usbmuxd",
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: "/var/lib/lockdown",
+				Target: "/var/lib/lockdown",
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: "/home/shamanec/ios-appium-docker/logs/container_test",
+				Target: "/opt/logs",
+			},
+		},
+	}
+
+	resp, err := cli.ContainerCreate(ctx, config, host_config, nil, nil, "test_container")
+	if err != nil {
+		panic(err)
+	}
+
+	err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
+	if err != nil {
+		panic(err)
+	}
 }
