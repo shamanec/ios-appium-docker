@@ -19,6 +19,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/go-connections/nat"
 	"github.com/gorilla/mux"
+	"github.com/tidwall/gjson"
 )
 
 func BuildDockerImage(w http.ResponseWriter, r *http.Request) {
@@ -217,14 +218,34 @@ func ImageExists() (imageStatus string) {
 
 // Restart docker container
 func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
-	// vars := mux.Vars(r)
-	// key := vars["device_udid"]
+	byteValue, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "eror")
+	}
+	device_udid := gjson.Get(string(byteValue), "device_udid").Str
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		panic(err)
 	}
+
+	jsonFile, err := os.Open("./configs/config.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+
+	byteValue, err = ioutil.ReadAll(jsonFile)
+	if err != nil {
+		fmt.Fprintf(w, "fail")
+	}
+	appium_port := gjson.Get(string(byteValue), `devicesList.#(device_udid="`+device_udid+`").appium_port`)
+	device_name := gjson.Get(string(byteValue), `devicesList.#(device_udid="`+device_udid+`").device_name`)
+	device_os_version := gjson.Get(string(byteValue), `devicesList.#(device_udid="`+device_udid+`").device_os_version`)
+	wda_mjpeg_port := gjson.Get(string(byteValue), `devicesList.#(device_udid="`+device_udid+`").wda_mjpeg_port`)
+	wda_port := gjson.Get(string(byteValue), `devicesList.#(device_udid="`+device_udid+`").wda_port`)
+	wda_bundle_id := gjson.Get(string(byteValue), "wda_bundle_id")
 
 	config := &container.Config{
 		Image: "ios-appium",
@@ -233,7 +254,14 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 			"20103": struct{}{},
 			"20003": struct{}{},
 		},
-		Env: []string{"ON_GRID=false", "DEVICE_UDID=00008030-000418C136FB802E", "WDA_PORT=20003", "MJPEG_PORT=20103", "APPIUM_PORT=4843", "DEVICE_OS_VERSION=15.0", "DEVICE_NAME=iPhone_SE", "WDA_BUNDLEID=com.shamanec.WebDriverAgentRunner.xctrunner"},
+		Env: []string{"ON_GRID=false",
+			"DEVICE_UDID=" + device_udid,
+			"WDA_PORT=" + wda_port.Raw,
+			"MJPEG_PORT=" + wda_mjpeg_port.Raw,
+			"APPIUM_PORT=" + appium_port.Raw,
+			"DEVICE_OS_VERSION=" + device_os_version.Str,
+			"DEVICE_NAME=" + device_name.Str,
+			"WDA_BUNDLEID=" + wda_bundle_id.Str},
 	}
 
 	host_config := &container.HostConfig{
@@ -276,7 +304,7 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	resp, err := cli.ContainerCreate(ctx, config, host_config, nil, nil, "test_container")
+	resp, err := cli.ContainerCreate(ctx, config, host_config, nil, nil, "ios_device_"+device_name.Str+"-"+device_udid)
 	if err != nil {
 		panic(err)
 	}
