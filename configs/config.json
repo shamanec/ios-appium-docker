@@ -10,9 +10,9 @@
     },
     {
       "appium_port": 4843,
-      "device_name": "test",
+      "device_name": "iPhone_SE",
       "device_os_version": "15.0",
-      "device_udid": "00008030-000418C136FB802E",
+      "device_udid": "00008030000418C136FB802E",
       "wda_mjpeg_port": 20103,
       "wda_port": 20003
     }

@@ -215,6 +215,7 @@ func handleRequests() {
 	myRouter.HandleFunc("/ios-devices/register", RegisterIOSDevice)
 	myRouter.HandleFunc("/set-sudo-password", SetSudoPassword)
 	myRouter.HandleFunc("/test", CreateIOSContainer)
+	myRouter.HandleFunc("/start-ios-container/{device_udid}", CreateIOSContainer)
 
 	myRouter.HandleFunc("/ws", testWS)
 

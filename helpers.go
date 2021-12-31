@@ -11,6 +11,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"time"
+
+	"github.com/danielpaulus/go-ios/ios"
 )
 
 // Create a tar archive from an array of files while preserving directory structure
@@ -153,4 +156,24 @@ func ReadJSONFile(jsonFilePath string) ([]byte, error) {
 	} else {
 		return byteValue, nil
 	}
+}
+
+func CheckIOSDevicesListNotEmpty() bool {
+	deviceList, _ := ios.ListDevices()
+	if len(deviceList.DeviceList) > 0 {
+		return true
+	}
+	return false
+}
+
+func CheckIOSDeviceInDevicesList(device_udid string) bool {
+	deviceList, _ := ios.ListDevices()
+	for start := time.Now(); time.Since(start) < 5*time.Second; {
+		for _, device := range deviceList.DeviceList {
+			if device.Properties.SerialNumber == device_udid {
+				return true
+			}
+		}
+	}
+	return false
 }

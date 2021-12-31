@@ -22,6 +22,8 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+var project_dir = GetEnvValue("project_dir")
+
 func BuildDockerImage(w http.ResponseWriter, r *http.Request) {
 	// Delete build-context.tar if it exists
 	DeleteFile("./build-context.tar")
@@ -218,11 +220,19 @@ func ImageExists() (imageStatus string) {
 
 // Restart docker container
 func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
-	byteValue, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		fmt.Fprintf(w, "eror")
+	// Get the parameters
+	vars := mux.Vars(r)
+	device_udid := vars["device_udid"]
+	// byteValue, err := ioutil.ReadAll(r.Body)
+	// if err != nil {
+	// 	fmt.Fprintf(w, "eror")
+	// }
+	// device_udid := gjson.Get(string(byteValue), "device_udid").Str
+
+	if !CheckIOSDeviceInDevicesList(device_udid) {
+		fmt.Fprintf(w, "Device is not available in the attached devices list from go-ios.")
+		return
 	}
-	device_udid := gjson.Get(string(byteValue), "device_udid").Str
 
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv)
@@ -236,7 +246,7 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 	}
 	defer jsonFile.Close()
 
-	byteValue, err = ioutil.ReadAll(jsonFile)
+	byteValue, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		fmt.Fprintf(w, "fail")
 	}
@@ -250,9 +260,9 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 	config := &container.Config{
 		Image: "ios-appium",
 		ExposedPorts: nat.PortSet{
-			"4843":  struct{}{},
-			"20103": struct{}{},
-			"20003": struct{}{},
+			nat.Port(appium_port.Raw):    struct{}{},
+			nat.Port(wda_port.Raw):       struct{}{},
+			nat.Port(wda_mjpeg_port.Raw): struct{}{},
 		},
 		Env: []string{"ON_GRID=false",
 			"DEVICE_UDID=" + device_udid,
@@ -266,22 +276,22 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 
 	host_config := &container.HostConfig{
 		PortBindings: nat.PortMap{
-			"4843": []nat.PortBinding{
+			nat.Port(appium_port.Raw): []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
-					HostPort: "4843",
+					HostPort: appium_port.Raw,
 				},
 			},
-			"20103": []nat.PortBinding{
+			nat.Port(wda_port.Raw): []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
-					HostPort: "20103",
+					HostPort: wda_port.Raw,
 				},
 			},
-			"20003": []nat.PortBinding{
+			nat.Port(wda_mjpeg_port.Raw): []nat.PortBinding{
 				{
 					HostIP:   "0.0.0.0",
-					HostPort: "20003",
+					HostPort: wda_mjpeg_port.Raw,
 				},
 			},
 		},
@@ -298,8 +308,13 @@ func CreateIOSContainer(w http.ResponseWriter, r *http.Request) {
 			},
 			{
 				Type:   mount.TypeBind,
-				Source: "/home/shamanec/ios-appium-docker/logs/container_test",
+				Source: project_dir + "/logs/container_" + device_name.Str + "-" + device_udid,
 				Target: "/opt/logs",
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: project_dir + "/ipa",
+				Target: "/opt/ipa",
 			},
 		},
 	}
