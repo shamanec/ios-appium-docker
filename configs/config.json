@@ -15,6 +15,14 @@
       "device_udid": "00008030000418C136FB802E",
       "wda_mjpeg_port": 20103,
       "wda_port": 20003
+    },
+    {
+      "appium_port": 4843,
+      "device_name": "test",
+      "device_os_version": "15.1",
+      "device_udid": "00008103000A69E23CBB001E",
+      "wda_mjpeg_port": 20103,
+      "wda_port": 20003
     }
   ],
   "devices_host": "10.8.0.1",

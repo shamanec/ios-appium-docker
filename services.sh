@@ -5,14 +5,13 @@
 control-function() {
   echo "Please select one of the options below: "
   control_options
-  while true
-  do
+  while true; do
     echo "//====================================//"
     echo "Would you like to select another control option?"
     select yn in "Yes" "No"; do
       case $yn in
       Yes)
-	echo "Please select one of the options below: "
+        echo "Please select one of the options below: "
         control_options
         break
         ;;
@@ -109,17 +108,16 @@ create_devices_rules() {
   fi
   touch 90-usbmuxd.rules
   #Read all the device udids from the config file into an array
-  read -r -d '' -a devices_udids < <( echo "$config_json" | jq -r ".devicesList[].device_udid" 2>&1)
+  read -r -d '' -a devices_udids < <(echo "$config_json" | jq -r ".devicesList[].device_udid" 2>&1)
   #Create separate line in the service rules for each device added in config.json
-  for device_udid in "${devices_udids[@]}"
-  do
+  for device_udid in "${devices_udids[@]}"; do
     #We identify the device by serial and manufacturer because they are available when you connect a device
     #This allows us to run the ios_device2docker container creation only if the specific device is added to the machine
-    echo "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"$device_udid\", OWNER=\"$(whoami)\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker $device_udid\"" >> 90-usbmuxd.rules
+    echo "ACTION==\"add\", SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ATTR{manufacturer}==\"Apple Inc.\", ATTR{serial}==\"$device_udid\", OWNER=\"$(whoami)\", MODE=\"0666\", RUN+=\"/usr/local/bin/ios_device2docker $device_udid\"" >>90-usbmuxd.rules
   done
   #We execute the ios_device2docker container removal everytime an iOS device is removed from the machine
   #The reason we do it everytime is that the attributes like 'serial' are not available upon disconnecting a device
-  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", ACTION==\"remove\", RUN+=\"/usr/local/bin/ios_device2docker\"" >> 90-usbmuxd.rules
+  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", ACTION==\"remove\", RUN+=\"/usr/local/bin/ios_device2docker\"" >>90-usbmuxd.rules
 }
 
 #This function create 39-usbmuxd.rules file that will start usbmuxd if an iOS device is added to the machine
@@ -130,14 +128,13 @@ create_usbmuxd_rule() {
   touch 39-usbmuxd.rules
   #We create a service file that starts (or attempts to start) usbmuxd in udev mode everytime an iOS device is connected to the machine
   #This is mostly important upon connecting the first device, for next devices usbmuxd is already running but I couldn't make it work in other way
-  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"$(whoami)\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -u -v -z\"" >> 39-usbmuxd.rules
+  echo "SUBSYSTEM==\"usb\", ENV{DEVTYPE}==\"usb_device\", ENV{PRODUCT}==\"5ac/12[9a][0-9a-f]/*|5ac/1901/*|5ac/8600/*\", OWNER=\"$(whoami)\", ACTION==\"add\", RUN+=\"/usr/sbin/usbmuxd -u -v -z\"" >>39-usbmuxd.rules
 }
-
 
 #This function reads the configs/default_ios_device2docker file and creates a new one with the current project dir
 generate_ios_device2docker() {
   local project_dir=$(pwd)
-  sed -e "s|project_dir|$project_dir|g" configs/default_ios_device2docker > ios_device2docker
+  sed -e "s|project_dir|$project_dir|g" configs/default_ios_device2docker >ios_device2docker
 }
 
 #This function copies the usbmuxd and devices rules to /etc/udev/rules.d and reloads the udev rules
@@ -187,7 +184,7 @@ stop_listener() {
     select yn in "Yes" "No"; do
       case $yn in
       Yes)
-	#Kill the running listener process and ask to destroy containers
+        #Kill the running listener process and ask to destroy containers
         kill_service "$processID"
         echo "Do you also wish to destroy the devices containers? Yes/No"
         select yn in "Yes" "No"; do
@@ -203,7 +200,7 @@ stop_listener() {
         exit
         ;;
       No)
-	#Don't kill the running listener process and exit
+        #Don't kill the running listener process and exit
         echo "Listening service not stopped. Closing..."
         sleep 2
         exit
@@ -233,7 +230,7 @@ start_single_container() {
   device_selection_list
 
   wda_bundle_id=$(cat configs/config.json | jq -r ".wda_bundle_id")
-  
+
   docker run --name "ios_device_$device_udid" \
     -p 4841:4841 \
     -p 20001:20001 \
@@ -259,21 +256,20 @@ start_single_container() {
 
 add_device() {
   add_device_to_config
-  while true
-    do
-      echo "Would you like to add another device?"
-      select yn in "Yes" "No"; do
-        case $yn in
-        Yes)
-          add_device_to_config
-          break
-          ;;
-        No)
-          return
-          ;;
-        esac
-      done
+  while true; do
+    echo "Would you like to add another device?"
+    select yn in "Yes" "No"; do
+      case $yn in
+      Yes)
+        add_device_to_config
+        break
+        ;;
+      No)
+        return
+        ;;
+      esac
     done
+  done
 }
 
 #This method lists the UDIDs of all connected real devices with selection
@@ -334,9 +330,9 @@ add_device_to_config() {
   devicePresentCheck=$(cat configs/config.json | jq '.devicesList[].device_udid' | grep ${device_udid})
   if [ -z "$devicePresentCheck" ]; then
     #Rewrite the initial json into a new json by injecting the additional device in the 'devicesList' array and store it into variable
-    new_json=$(cat < configs/config.json | jq '.' | jq ".devicesList += [{\"device_name\": \"$device_name\", \"device_udid\": \"$device_udid\", \"device_os_version\": \"$os_version\", \"appium_port\": $appium_port, \"wda_port\": $wda_port, \"wda_mjpeg_port\": $mjpeg_port}]" 2>&1)
+    new_json=$(cat <configs/config.json | jq '.' | jq ".devicesList += [{\"device_name\": \"$device_name\", \"device_udid\": \"$device_udid\", \"device_os_version\": \"$os_version\", \"appium_port\": $appium_port, \"wda_port\": $wda_port, \"wda_mjpeg_port\": $mjpeg_port}]" 2>&1)
     #Make the new json prettier and echo it in the config.json file completely rewriting it
-    echo $new_json | json_pp -json_opt pretty,canonical > configs/config.json
+    echo $new_json | json_pp -json_opt pretty,canonical >configs/config.json
   else
     echo "The selected device is already registered in the config.json file:"
     echo "================================================================================="
@@ -439,8 +435,8 @@ add_wda_bundleID() {
 
 #This function updates key provided with argument 1 to value provided with argument 2 in the config.json
 update_config_json_value() {
-  config_json=$(cat < configs/config.json)
-  echo $config_json | jq ".$1 = \"$2\"" | json_pp -json_opt pretty,canonical > configs/config.json
+  config_json=$(cat <configs/config.json)
+  echo $config_json | jq ".$1 = \"$2\"" | json_pp -json_opt pretty,canonical >configs/config.json
 }
 
 setup_developer_disk_images() {
@@ -454,12 +450,12 @@ setup_developer_disk_images() {
 
 #Build Docker image with default name
 docker_build() {
-    docker build -t ios-appium .
+  docker build -t ios-appium .
 }
 
 #Delete Docker image with default name from local repo
 remove_docker_image() {
-    docker rmi "$(docker images -q ios-appium)"
+  docker rmi "$(docker images -q ios-appium)"
 }
 
 install_dependencies() {
@@ -486,7 +482,7 @@ install_dependencies() {
 
   echo "Installing unzip util..."
   sudo apt-get update -y && sudo apt-get install -y unzip
- 
+
   echo "Installing jq util..."
   sudo apt-get update -y && sudo apt-get install -y jq
 
@@ -652,7 +648,7 @@ control)
   control-function
   ;;
 start)
-  start_service >> tests.txt
+  start_service >>tests.txt
   ;;
 -h)
   echo_help
